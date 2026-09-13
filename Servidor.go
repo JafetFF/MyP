@@ -1,6 +1,3 @@
-
-// comentario
-
 package main
 
 import "fmt"

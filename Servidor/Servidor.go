@@ -6,8 +6,20 @@ import (
        "net"
 )
 
-func main() {
-      listener, err := net.Listen("tcp", ":8080")
+type Servidor struct {
+     puerto   string
+}
+
+// Función que regresa un servidor
+func NuevoServidor(puerto string) *Servidor {
+     return &Servidor{
+     	    puerto: puerto,
+     }
+}
+
+// Función que inicia el servidor dado
+func (s *Servidor) Iniciar() {
+      listener, err := net.Listen("tcp", s.puerto)
       if err != nil {
       	 log.Fatalf("Error")
       }
@@ -20,11 +32,12 @@ func main() {
 	     log.Printf("Error al aceptar conexión")
 	     continue
 	  }
-	  go conexion(conn)
+	  go s.AceptaConexiones(conn)
       }
 }
 
-func conexion(conn net.Conn) {
+// Función que acepta conexiones
+func (s *Servidor) AceptaConexiones(conn net.Conn) {
      defer conn.Close()
      fmt.Printf("New Conexion desde", conn.RemoteAddr().String())
      conn.Write([]byte("Mensaje recibido correctamente"))

@@ -17,8 +17,8 @@ jobs:
       with:
         go-version: '1.24.4'
 
-    - name: Build
-      run: go build -v ./...
+    - name: Build Servidor
+      run: go build -o /servidor ./Servidor
 
     - name: Test
       run: go test -v ./...

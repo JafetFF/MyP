@@ -24,7 +24,7 @@ func (s *Servidor) Iniciar() {
       	 log.Fatalf("Error")
       }
       defer listener.Close()
-      fmt.Printf("Escuchando en el puerto %s...", s.puerto)
+      fmt.Printf("Escuchando en el puerto %s\n", s.puerto)
 
       for {
       	  conn, err := listener.Accept()

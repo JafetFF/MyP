@@ -32,12 +32,12 @@ func (s *Servidor) Iniciar() {
 	     log.Printf("Error al aceptar conexión")
 	     continue
 	  }
-	  go s.AceptaConexiones(conn)
+	  go s.AtiendeConexion(conn)
       }
 }
 
 // Función que acepta conexiones
-func (s *Servidor) AceptaConexiones(conn net.Conn) {
+func (s *Servidor) AtiendeConexion(conn net.Conn) {
      defer conn.Close()
      fmt.Printf("New Conexion desde %s\n", conn.RemoteAddr().String())
      conn.Write([]byte("Mensaje recibido correctamente"))

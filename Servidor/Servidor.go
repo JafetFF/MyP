@@ -29,7 +29,7 @@ func (s *Servidor) Iniciar() {
       for {
       	  conn, err := listener.Accept()
 	  if err != nil {
-	     log.Printf("Error al aceptar conexión")
+	     log.Println("Error al aceptar conexión")
 	     continue
 	  }
 	  go s.AtiendeConexion(conn)

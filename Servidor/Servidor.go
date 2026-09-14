@@ -39,6 +39,6 @@ func (s *Servidor) Iniciar() {
 // Función que acepta conexiones
 func (s *Servidor) AceptaConexiones(conn net.Conn) {
      defer conn.Close()
-     fmt.Printf("New Conexion desde %s", conn.RemoteAddr().String())
+     fmt.Printf("New Conexion desde %s\n", conn.RemoteAddr().String())
      conn.Write([]byte("Mensaje recibido correctamente"))
 }

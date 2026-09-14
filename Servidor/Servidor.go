@@ -24,7 +24,7 @@ func (s *Servidor) Iniciar() {
       	 log.Fatalf("Error")
       }
       defer listener.Close()
-      fmt.Printf("Escuchando en el puerto 8080...")
+      fmt.Printf("Escuchando en el puerto %s...", s.puerto)
 
       for {
       	  conn, err := listener.Accept()
@@ -39,6 +39,6 @@ func (s *Servidor) Iniciar() {
 // Función que acepta conexiones
 func (s *Servidor) AceptaConexiones(conn net.Conn) {
      defer conn.Close()
-     fmt.Printf("New Conexion desde", conn.RemoteAddr().String())
+     fmt.Printf("New Conexion desde %s", conn.RemoteAddr().String())
      conn.Write([]byte("Mensaje recibido correctamente"))
 }

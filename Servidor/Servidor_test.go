@@ -38,8 +38,7 @@ func TestAtiendeConexion_JSONInvalido(t *testing.T) {
         d.Operation != "INVALID" ||
 	d.Result != "INVALID" {
 	t.Errorf("Respuesta incorrecta")
-     }
-     
+     }     
 }
 
 // Prueba Unitaria utilizando net.Pipe()
@@ -73,6 +72,40 @@ func TestAtiendeConexion_IDENTIFY_INVALID(t *testing.T) {
         d.Operation != "INVALID" ||
 	d.Result != "NOT_IDENTIFIED" {
 	t.Errorf("Respuesta incorrecta")
+     }     
+}
+
+
+// Prueba Unitaria para verificar que se manda el mensaje de SUCCESS
+func TestAtiendeConexion_SUCCESS(t *testing.T) {
+     cliente, servidor := net.Pipe()
+
+     defer cliente.Close()
+
+     servidorPrueba := &Servidor{}
+
+     go servidorPrueba.AtiendeConexion(servidor)
+
+     _, err := cliente.Write([]byte(`{
+				       "type":"IDENTIFY",
+				       "username":"Nombre extravagante"
+				       }`))
+     if err != nil {
+     	t.Fatalf("No se pudo escribir en el cliente: %v", err)
+     }
+
+     decodificado := json.NewDecoder(cliente)
+     var d comun.Mensaje
+     err = decodificado.Decode(&d)
+     
+     if err != nil {
+     	t.Fatalf("No se pudo decodificar la respuesta: %v", err)
      }
      
+     if d.Type != "RESPONSE" ||
+        d.Operation != "IDENTIFY" ||
+	d.Result != "SUCCESS" ||
+	d.Username != "Nombre extravagante" {
+	t.Errorf("Respuesta incorrecta")
+     }     
 }

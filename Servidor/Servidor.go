@@ -72,13 +72,12 @@ func (s *Servidor) AtiendeConexion(conn net.Conn) {
 	}
 	return
      }
-     conn.Write([]byte("pasó"))
 
      respuesta := comun.Mensaje{
      Type:         "RESPONSE",
      Operation:	   "IDENTIFY",
      Result:  	   "SUCCESS",
-     Extra:   	   "Juan",
+     Extra:   	   m.Username,
      }
      codificado := json.NewEncoder(conn)
      err = codificado.Encode(respuesta)

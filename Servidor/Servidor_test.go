@@ -105,7 +105,7 @@ func TestAtiendeConexion_SUCCESS(t *testing.T) {
      if d.Type != "RESPONSE" ||
         d.Operation != "IDENTIFY" ||
 	d.Result != "SUCCESS" ||
-	d.Username != "Nombre extravagante" {
+	d.Extra != "Nombre extravagante" {
 	t.Errorf("Respuesta incorrecta")
      }     
 }

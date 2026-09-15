@@ -55,8 +55,8 @@ func (s *Servidor) AtiendeConexion(conn net.Conn) {
 	err = codificado.Encode(respuesta)
 	if err != nil {
 	   fmt.Printf("Error al enviar respuesta %v\n", err)
-	   return
 	}
+	return
      }
      if m.Type != "IDENTIFY" {
      	respuesta := mensaje{
@@ -68,8 +68,8 @@ func (s *Servidor) AtiendeConexion(conn net.Conn) {
 	err = codificado.Encode(respuesta)
 	if err != nil {
 	   fmt.Printf("Error al enviar respuesta %v\n", err)
-	   return
 	}
+	return
      }
      conn.Write([]byte("pasó"))
 	    

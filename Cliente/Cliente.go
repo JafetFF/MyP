@@ -8,9 +8,7 @@ type Cliente struct {
 
 // Función que regresa un nuevo cliente
 func NuevoCliente(direccion string) *Cliente {
-     return &Cliente{
-     	    direccion: direccion
-     }
+     return &Cliente{direccion: direccion}
 }
 
 // Función que conecta el cliente con el servidor

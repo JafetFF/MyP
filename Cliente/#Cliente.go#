@@ -32,5 +32,6 @@ func (c *Cliente) Conecta() {
 
      codificado := json.NewEncoder(conn)
      codificado.Encode(mensaje)
-     
+
+
 }

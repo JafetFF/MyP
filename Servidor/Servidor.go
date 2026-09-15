@@ -72,5 +72,16 @@ func (s *Servidor) AtiendeConexion(conn net.Conn) {
 	return
      }
      conn.Write([]byte("pasó"))
-	    
+
+     respuesta := mensaje{
+     Type:         "RESPONSE",
+     Operation:	   "IDENTIFY",
+     Result:  	   "SUCCESS",
+     Extra:   	   "Juan",
+     }
+     codificado := json.NewEncoder(conn)
+     err = codificado.Encode(respuesta)
+     if err != nil {
+     	fmt.Printf("Error al enviar respuesta %v\n", err)
+     }   
 }

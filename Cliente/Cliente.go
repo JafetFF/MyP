@@ -1,8 +1,6 @@
 package main
 
-import (
-       "net"
-)
+import "net"
 
 type Cliente struct {
      direccion string
@@ -32,5 +30,6 @@ func (c *Cliente) Conecta() {
 
      codificado := json.NewEncoder(conn)
      codificado.Encode(mensaje)
-     
+
+
 }

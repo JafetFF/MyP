@@ -37,7 +37,7 @@ func (s *Servidor) Iniciar() {
       }
 }
 
-// Función que acepta conexiones
+// Función que atiende conexiones
 func (s *Servidor) AtiendeConexion(conn net.Conn) {
      defer conn.Close()
      fmt.Printf("Nueva Conexión desde %s\n", conn.RemoteAddr().String())

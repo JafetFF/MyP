@@ -4,6 +4,7 @@ import (
        "net"
        "encoding/json"
        "log"
+       "MyP/Comun"
 )
 
 type Cliente struct {
@@ -25,7 +26,7 @@ func (c *Cliente) Conecta() {
      }
      defer conn.Close()
 
-     mensaje := mensaje{
+     mensaje := comun.Mensaje{
      	 Type: "IDENTIFY",
 	 Username: "Juan",
      }

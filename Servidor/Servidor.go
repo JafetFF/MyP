@@ -5,6 +5,7 @@ import (
        "encoding/json"
        "log"
        "net"
+       "MyP/Comun"
 )
 
 type Servidor struct {
@@ -43,10 +44,10 @@ func (s *Servidor) AtiendeConexion(conn net.Conn) {
      fmt.Printf("Nueva Conexión desde %s\n", conn.RemoteAddr().String())
 
      decodificado := json.NewDecoder(conn)
-     var m mensaje
+     var m comun.Mensaje
      err := decodificado.Decode(&m)
      if err != nil {
-     	respuesta := mensaje{
+     	respuesta := comun.Mensaje{
 	Type: 	   "RESPONSE",
      	Operation: "INVALID",
 	Result:    "INVALID",
@@ -59,7 +60,7 @@ func (s *Servidor) AtiendeConexion(conn net.Conn) {
 	return
      }
      if m.Type != "IDENTIFY" {
-     	respuesta := mensaje{
+     	respuesta := comun.Mensaje{
 	Type: 	   "RESPONSE",
      	Operation: "INVALID",
 	Result:    "NOT_IDENTIFIED",
@@ -73,7 +74,7 @@ func (s *Servidor) AtiendeConexion(conn net.Conn) {
      }
      conn.Write([]byte("pasó"))
 
-     respuesta := mensaje{
+     respuesta := comun.Mensaje{
      Type:         "RESPONSE",
      Operation:	   "IDENTIFY",
      Result:  	   "SUCCESS",

@@ -4,6 +4,7 @@ import (
        "encoding/json"
        "net"
        "testing"
+       "MyP/Comun"
 )
 
 // Prueba Unitaria utilizando net.Pipe()
@@ -26,7 +27,7 @@ func TestAtiendeConexion_JSONInvalido(t *testing.T) {
      }
 
      decodificado := json.NewDecoder(cliente)
-     var d mensaje
+     var d comun.Mensaje
      err = decodificado.Decode(&d)
      
      if err != nil {
@@ -61,7 +62,7 @@ func TestAtiendeConexion_IDENTIFY_INVALID(t *testing.T) {
      }
 
      decodificado := json.NewDecoder(cliente)
-     var d mensaje
+     var d comun.Mensaje
      err = decodificado.Decode(&d)
      
      if err != nil {

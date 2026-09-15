@@ -1,0 +1,13 @@
+package main
+
+type Cliente struct {
+     String direccion
+}
+
+func NuevoCliente(string direccion) *Cliente {
+     return &Cliente{
+     	    direccion: direccion
+     }
+}
+
+func C

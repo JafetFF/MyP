@@ -20,5 +20,8 @@ jobs:
     - name: Build Servidor
       run: go build -o /tmp/Servidor ./Servidor
 
+    - name: Build Cliente
+      run: go build -o /tmp/Cliente ./Cliente
+
     - name: Test
       run: go test -v ./...

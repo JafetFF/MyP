@@ -9,11 +9,15 @@ import (
 
 type Cliente struct {
      direccion string
+     nombre    string
 }
 
 // Función que regresa un nuevo cliente
-func NuevoCliente(direccion string) *Cliente {
-     return &Cliente{direccion: direccion}
+func NuevoCliente(direccion string, nombre string) *Cliente {
+     return &Cliente{
+     	    direccion: direccion,
+	    nombre:    nombre,
+     }
 }
 
 // Función que conecta el cliente con el servidor
@@ -28,11 +32,25 @@ func (c *Cliente) Conecta() {
 
      mensaje := comun.Mensaje{
      	 Type: "IDENTIFY",
-	 Username: "Juan",
+	 Username: c.nombre,
      }
 
      codificado := json.NewEncoder(conn)
      codificado.Encode(mensaje)
 
+     decodificado := json.NewDecoder(conn)
+     var m comun.Mensaje
+     err = decodificado.Decode(&m)
 
+     if err != nil {
+     	log.Printf("Error al recibir respuestaa: %v", err)
+	return
+     }
+     
+     log.Printf("tipo: %s\n", m.Type)
+     log.Printf("operacion: %s\n", m.Operation)
+     log.Printf("resultado: %s\n", m.Result)
+     log.Printf("extra: %s\n", m.Extra)
+     
+     
 }

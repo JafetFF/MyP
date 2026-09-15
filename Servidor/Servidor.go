@@ -79,6 +79,7 @@ func (s *Servidor) AtiendeConexion(conn net.Conn) {
      Result:  	   "SUCCESS",
      Extra:   	   m.Username,
      }
+     
      codificado := json.NewEncoder(conn)
      err = codificado.Encode(respuesta)
      if err != nil {

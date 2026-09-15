@@ -2,12 +2,13 @@ package main
 
 import (
        "fmt"
+       "encoding/json"
        "log"
        "net"
 )
 
 type Servidor struct {
-     puerto   string
+     puerto string
 }
 
 // Función que regresa un servidor
@@ -21,7 +22,7 @@ func NuevoServidor(puerto string) *Servidor {
 func (s *Servidor) Iniciar() {
       listener, err := net.Listen("tcp", s.puerto)
       if err != nil {
-      	 log.Fatalf("Error")
+      	 log.Fatalf("Error: %v", err)
       }
       defer listener.Close()
       fmt.Printf("Escuchando en el puerto %s\n", s.puerto)
@@ -39,6 +40,37 @@ func (s *Servidor) Iniciar() {
 // Función que acepta conexiones
 func (s *Servidor) AtiendeConexion(conn net.Conn) {
      defer conn.Close()
-     fmt.Printf("New Conexion desde %s\n", conn.RemoteAddr().String())
-     conn.Write([]byte("Mensaje recibido correctamente"))
+     fmt.Printf("Nueva Conexión desde %s\n", conn.RemoteAddr().String())
+
+     decodificado := json.NewDecoder(conn)
+     var m mensaje
+     err := decodificado.Decode(&m)
+     if err != nil {
+     	respuesta := mensaje{
+	Type: 	   "RESPONSE",
+     	Operation: "INVALID",
+	Result:    "INVALID",
+	}
+	codificado := json.NewEncoder(conn)
+	err = codificado.Encode(respuesta)
+	if err != nil {
+	   fmt.Printf("Error al enviar respuesta %v\n", err)
+	   return
+	}
+     }
+     if m.Type != "IDENTIFY" {
+     	respuesta := mensaje{
+	Type: 	   "RESPONSE",
+     	Operation: "INVALID",
+	Result:    "NOT_IDENTIFIED",
+	}
+	codificado := json.NewEncoder(conn)
+	err = codificado.Encode(respuesta)
+	if err != nil {
+	   fmt.Printf("Error al enviar respuesta %v\n", err)
+	   return
+	}
+     }
+     conn.Write([]byte("pasó"))
+	    
 }

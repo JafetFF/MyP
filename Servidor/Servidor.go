@@ -9,13 +9,21 @@ import (
 )
 
 type Servidor struct {
-     puerto string
+     puerto   string
+     clientes map[string]ClienteConectado
+}
+
+type ClienteConectado struct {
+     nombre   string
+     estado   string
+     conexion net.Conn
 }
 
 // Función que regresa un servidor
 func NuevoServidor(puerto string) *Servidor {
      return &Servidor{
-     	    puerto: puerto,
+     	    puerto:   puerto,
+	    clientes: make(map[string]ClienteConectado),
      }
 }
 
@@ -40,7 +48,7 @@ func (s *Servidor) Iniciar() {
 
 // Función que atiende conexiones
 func (s *Servidor) AtiendeConexion(conn net.Conn) {
-     defer conn.Close()
+     
      fmt.Printf("Nueva Conexión desde %s\n", conn.RemoteAddr().String())
 
      decodificado := json.NewDecoder(conn)
@@ -72,6 +80,30 @@ func (s *Servidor) AtiendeConexion(conn net.Conn) {
 	}
 	return
      }
+
+     if _, existe :=
+     s.clientes[m.Username]; existe{
+     	respuesta := comun.Mensaje{
+		  Type:      "RESPONSE",
+		  Operation: "IDENTIFY",
+		  Result:    "USER_ALREADY_EXISTS",
+		  Extra:     m.Username,
+	}
+	codificado := json.NewEncoder(conn)
+	codificado.Encode(respuesta)
+	return
+     }
+
+     s.clientes[m.Username] = ClienteConectado{
+     	nombre:   m.Username,
+	estado:   "ACTIVE",
+	conexion: conn,
+     }
+
+     defer func() {
+     	   delete(s.clientes, m.Username)
+     	   conn.Close()
+     }()
 
      respuesta := comun.Mensaje{
      Type:         "RESPONSE",
@@ -108,6 +140,18 @@ func (s *Servidor) ProcesaMensaje(mensaje comun.Mensaje, conn net.Conn) {
      case "PUBLIC_TEXT":
      case "TEXT":
      case "USERS":
+     	  usuarios := make(map[string]string)
+
+	  for nombre, cliente := range s.clientes {
+	      usuarios[nombre] = cliente.estado
+	  }
+	  respuesta := comun.Mensaje{
+	  	    Type:  "USER_LIST",
+		    Users: usuarios,
+	  }
+	  codificado := json.NewEncoder(conn)
+	  codificado.Encode(respuesta)
+	  
      case "NEW_ROOM":
      case "INVITE":
      case "JOIN_ROOM":

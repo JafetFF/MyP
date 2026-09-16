@@ -9,5 +9,7 @@ type Mensaje struct {
      Status    string `json:"status,omitempty"`
      Text      string `json:"text,omitempty"`
      Roomname  string `json:"roomname,omitempty"`
+     Users      map[string]string `json:"users,omitempty"`
+     //Roomname  string `json:"roomname,omitempty"`
      
 }

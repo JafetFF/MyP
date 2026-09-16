@@ -52,6 +52,10 @@ func (c *Cliente) Conecta() {
 	return
      }
      log.Printf("mensaje: %s", m)
+
+     if m.Result != "SUCCESS" {
+     	return
+     }
      
      go EscuchaServidor(conn, decodificado)
 
@@ -97,15 +101,32 @@ func EscuchaServidor(conn net.Conn, decodificado *json.Decoder) {
 func ProcesaMensaje(mensaje comun.Mensaje) {
      switch mensaje.Type {
      case "New_USER":
+     	  fmt.Printf("Nuevo usuario conectado: %s\n", mensaje.Username)
+	  
      case "NEW_STATUS":
+     	  fmt.Printf("%s ha cambiado a %s\n", mensaje.Username, mensaje.Status)
+	  
      case "USER_LIST":
+     	  fmt.Printf("Lista de usuarios:")
+	  for usuario, estado := range mensaje.Users{
+	      	       fmt.Printf("%s: %s\n", usuario, estado)
+	  }
+	  
      case "TEXT_FROM":
+     	  fmt.Printf("%s: %s\n", mensaje.Username, mensaje.Text)
+	  
      case "PUBLIC_TEXT_FROM":
+     	  fmt.Printf("%s: %s\n", mensaje.Username, mensaje.Text)
+	  
      case "JOINED_ROOM":
      case "ROOM_USER_LIST":
      case "LEFT_ROOM":
      case "DISCONNECTED":
      case "RESPONSE":
+     	  fmt.Printf("Respuesta: %s - %s\n", mensaje.Operation, mensaje.Result)
+     default:
+	fmt.Printf("Mensaje no reconocido: %s\n", mensaje.Type)
+	  
      }
 
 }

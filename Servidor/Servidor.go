@@ -48,6 +48,9 @@ func (s *Servidor) Iniciar() {
 
 // Función que atiende conexiones
 func (s *Servidor) AtiendeConexion(conn net.Conn) {
+     if s.clientes == nil {
+     	s.clientes = make(map[string]ClienteConectado)
+     }
      
      fmt.Printf("Nueva Conexión desde %s\n", conn.RemoteAddr().String())
 

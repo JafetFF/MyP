@@ -6,4 +6,8 @@ type Mensaje struct {
      Operation string `json:"operation,omitempty"`
      Result    string `json:"result,omitempty"`
      Extra     string `json:"extra,omitempty"`
+     Status    string `json:"status,omitempty"`
+     Text      string `json:"text,omitempty"`
+     Roomname  string `json:"roomname,omitempty"`
+     
 }

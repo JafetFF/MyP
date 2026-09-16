@@ -78,11 +78,44 @@ func (s *Servidor) AtiendeConexion(conn net.Conn) {
      Operation:	   "IDENTIFY",
      Result:  	   "SUCCESS",
      Extra:   	   m.Username,
-     }
+     }     
      
      codificado := json.NewEncoder(conn)
      err = codificado.Encode(respuesta)
      if err != nil {
      	fmt.Printf("Error al enviar respuesta %v\n", err)
-     }   
+     }
+
+     for {
+     	 var mensaje comun.Mensaje
+
+	 err := decodificado.Decode(&mensaje)
+	 if err != nil {
+	    fmt.Printf("Cliente desconectado: %v\n", err)
+	    return
+	 }
+
+	 fmt.Printf("Mensaje recibido: %+v\n", mensaje)
+
+	 s.ProcesaMensaje(mensaje, conn)
+
+     } 
+}
+
+// Función que procesa un mensaje
+func (s *Servidor) ProcesaMensaje(mensaje comun.Mensaje, conn net.Conn) {
+     switch mensaje.Type {
+     case "PUBLIC_TEXT":
+     case "TEXT":
+     case "USERS":
+     case "NEW_ROOM":
+     case "INVITE":
+     case "JOIN_ROOM":
+     case "ROOM_USERS":
+     case "ROOM_TEXT":
+     case "LEAVE_ROOM":
+     case "DISCONNECT":
+     default:
+     // cuando el mensaje sea inválido
+     }
 }

@@ -55,6 +55,13 @@ func (c *Cliente) Conecta() {
      if m.Result != "SUCCESS" {
      	return
      }
+
+     nuevo_usuario := comun.Mensaje{
+     	 Type: "NEW_USER",
+	 Username: c.nombre,
+     }
+
+     codificado.Encode(nuevo_usuario)
      
      go EscuchaServidor(conn, decodificado)
 
@@ -82,7 +89,9 @@ func (c *Cliente) Conecta() {
 func InterpretaMensaje(entrada string, codificado *json.Encoder) {
      switch entrada {
      case "USERS": // lista de usuarios
-     	  
+     	  codificado.Encode(comun.Mensaje{
+		Type: "USERS",
+	  })
      case "STATUS": // estado
      case "TEXT": // msj privado
      case "NEW_ROOM":
@@ -120,15 +129,17 @@ func ProcesaMensaje(mensaje comun.Mensaje) {
      switch mensaje.Type {
      case "NEW_USER":
      	  fmt.Printf("Nuevo usuario conectado: %s\n", mensaje.Username)
+	  fmt.Print("> ")
 	  
      case "NEW_STATUS":
      	  fmt.Printf("%s ha cambiado a %s\n", mensaje.Username, mensaje.Status)
 	  
      case "USER_LIST":
-     	  fmt.Printf("Lista de usuarios:")
+     	  fmt.Printf("Lista de usuarios:\n")
 	  for usuario, estado := range mensaje.Users{
-	      	       fmt.Printf("%s: %s\n", usuario, estado)
+	      	       fmt.Printf("> %s: %s\n", usuario, estado)
 	  }
+	  fmt.Print("> ")
 	  
      case "TEXT_FROM":
      	  fmt.Printf("%s: %s\n", mensaje.Username, mensaje.Text)

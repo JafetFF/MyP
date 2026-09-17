@@ -140,6 +140,9 @@ func (s *Servidor) AtiendeConexion(conn net.Conn) {
 // Función que procesa un mensaje
 func (s *Servidor) ProcesaMensaje(mensaje comun.Mensaje, conn net.Conn) {
      switch mensaje.Type {
+     case "NEW_USER":
+     	  s.NuevoUsuario(conn)
+     	  
      case "PUBLIC_TEXT":
      	  nombre := s.GetNombre(conn)
      	  s.MensajePublico(mensaje, conn, nombre)
@@ -172,6 +175,24 @@ func (s *Servidor) UsuariosGeneral(conn net.Conn) {
 	  }
 	  codificado := json.NewEncoder(conn)
 	  codificado.Encode(respuesta)
+}
+
+// Función que avisa a los demás usuarios (si hay) que llegó alguien nuevo
+func (s *Servidor) NuevoUsuario(conn net.Conn) {
+     
+     nombre := s.GetNombre(conn)
+     for _, cliente := range s.clientes {
+	      
+	  if cliente.conexion == conn {
+	     continue
+	  }
+	  codificado := json.NewEncoder(cliente.conexion)
+	  respuesta := comun.Mensaje{
+	  	    Type:     "NEW_USER",
+		    Username: nombre,
+	  }
+	  codificado.Encode(respuesta)
+     }
 }
 
 // Función que manda el mensaje a todos

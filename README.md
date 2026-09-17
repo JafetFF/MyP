@@ -16,5 +16,5 @@ $ ./Servidor
 ```
 Arranca el servidor y lo mismo con el cliente
 ```
-$ ./Cliente
+$ ./Cliente IP:HOST NOMBRE_DE_USUARIO
 ```

@@ -196,8 +196,6 @@ func TestAtiendeConexion_DESCONEXION(t *testing.T) {
      	t.Errorf("No se añadió el cliente")
      }
 
-     
-
      cliente.Close()
      espera.Wait()
 

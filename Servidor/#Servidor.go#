@@ -130,8 +130,6 @@ func (s *Servidor) AtiendeConexion(conn net.Conn) {
 	    return
 	 }
 
-	 //fmt.Printf("Mensaje recibido: %+v\n", mensaje)
-
 	 s.ProcesaMensaje(mensaje, conn)
 
      } 

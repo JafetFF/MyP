@@ -51,7 +51,6 @@ func (c *Cliente) Conecta() {
      	log.Printf("Error al recibir respuestaa: %v", err)
 	return
      }
-     log.Printf("mensaje: %s", m)
 
      if m.Result != "SUCCESS" {
      	return
@@ -83,7 +82,6 @@ func (c *Cliente) Conecta() {
 
 // Función que se mantiene a la espera de un mensaje nuevo
 func EscuchaServidor(conn net.Conn, decodificado *json.Decoder) {
-     // decodificado = json.NewDecoder(conn)
      	 
      for {
 	 var m comun.Mensaje
@@ -92,7 +90,7 @@ func EscuchaServidor(conn net.Conn, decodificado *json.Decoder) {
 	    log.Printf("Error al recibir el mensaje: %v", err)
 	    return
 	 }
-	 log.Printf("Mensaje recibido: %+v", m)
+
 	 ProcesaMensaje(m) 
      }
 }
@@ -100,7 +98,7 @@ func EscuchaServidor(conn net.Conn, decodificado *json.Decoder) {
 // Función que procesa un mensaje
 func ProcesaMensaje(mensaje comun.Mensaje) {
      switch mensaje.Type {
-     case "New_USER":
+     case "NEW_USER":
      	  fmt.Printf("Nuevo usuario conectado: %s\n", mensaje.Username)
 	  
      case "NEW_STATUS":
@@ -117,6 +115,7 @@ func ProcesaMensaje(mensaje comun.Mensaje) {
 	  
      case "PUBLIC_TEXT_FROM":
      	  fmt.Printf("%s: %s\n", mensaje.Username, mensaje.Text)
+	  fmt.Print("> ")
 	  
      case "JOINED_ROOM":
      case "ROOM_USER_LIST":

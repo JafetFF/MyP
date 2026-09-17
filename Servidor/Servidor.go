@@ -146,17 +146,7 @@ func (s *Servidor) ProcesaMensaje(mensaje comun.Mensaje, conn net.Conn) {
 
      case "TEXT":
      case "USERS":
-     	  usuarios := make(map[string]string)
-
-	  for nombre, cliente := range s.clientes {
-	      usuarios[nombre] = cliente.estado
-	  }
-	  respuesta := comun.Mensaje{
-	  	    Type:  "USER_LIST",
-		    Users: usuarios,
-	  }
-	  codificado := json.NewEncoder(conn)
-	  codificado.Encode(respuesta)
+     	  s.UsuariosGeneral(conn)
 	  
      case "NEW_ROOM":
      case "INVITE":
@@ -170,6 +160,21 @@ func (s *Servidor) ProcesaMensaje(mensaje comun.Mensaje, conn net.Conn) {
      }
 }
 
+// Función que regresa la lista de usuarios de la sala principal
+func (s *Servidor) UsuariosGeneral(conn net.Conn) {
+     users := make(map[string]string)
+     for nombre, cliente := range s.clientes {
+	      users[nombre] = cliente.estado
+	  }
+	  respuesta := comun.Mensaje{
+	  	    Type:  "USER_LIST",
+		    Users: users,
+	  }
+	  codificado := json.NewEncoder(conn)
+	  codificado.Encode(respuesta)
+}
+
+// Función que manda el mensaje a todos
 func (s *Servidor) MensajePublico(mensaje comun.Mensaje, conn net.Conn, nombre string) {
      for _, cliente := range s.clientes {
      	 if cliente.conexion == conn {
@@ -185,6 +190,7 @@ func (s *Servidor) MensajePublico(mensaje comun.Mensaje, conn net.Conn, nombre s
      }
 }
 
+// Función auxiliar que regresa el nombre del cliente mediante la conexión
 func (s *Servidor) GetNombre(conn net.Conn) string {
      for nombre, cliente := range s.clientes {
      	 if cliente.conexion == conn {

@@ -66,13 +66,33 @@ func (c *Cliente) Conecta() {
 	   return
 	}
 	entrada = strings.TrimSpace(entrada)
-	if entrada == "salir" {
+	if entrada == "exit" {
 	   codificado.Encode(comun.Mensaje{
 		Type: "DISCONNECT",
  	   })
 	   return
 	}
 
+	InterpretaMensaje(entrada, codificado)
+
+     }
+}
+
+// Función auxiliar que interpreta lo que el cliente solicita al servidor
+func InterpretaMensaje(entrada string, codificado *json.Encoder) {
+     switch entrada {
+     case "USERS": // lista de usuarios
+     	  
+     case "STATUS": // estado
+     case "TEXT": // msj privado
+     case "NEW_ROOM":
+     case "INVITE":
+     case "JOIN_ROOM":
+     case "ROOM_USERS":
+     case "ROOM_TEXT":
+     case "LEAVE_ROOM":
+     case "DISCONNECT": // es como lo de exit pero llendo aeste caso
+     default: // msj para todos
 	codificado.Encode(comun.Mensaje{
 		Type: "PUBLIC_TEXT",
 		Text: entrada,

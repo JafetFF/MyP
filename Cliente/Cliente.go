@@ -26,6 +26,8 @@ func NuevoCliente(direccion string, nombre string) *Cliente {
 
 // Función que conecta el cliente con el servidor
 func (c *Cliente) Conecta() {
+
+     
      
      conn, err := net.Dial("tcp", c.direccion)
 
@@ -80,6 +82,15 @@ func (c *Cliente) Conecta() {
 	   return
 	}
 
+	//data, err := json.Marshal(entrada)
+	//if err != nil {
+	  // fmt.Printf("Error al recibir mensaje: %v\n", err)
+	//}
+	 
+	//fmt.Printf("Mensaje recibido: %s\n", data)
+	//fmt.Printf("Mensaje recibido por el cliente: %s\n", entrada)
+	// AQui no va ajajajajaj
+	
 	InterpretaMensaje(entrada, codificado)
 
      }
@@ -102,6 +113,10 @@ func InterpretaMensaje(entrada string, codificado *json.Encoder) {
      case "LEAVE_ROOM":
      case "DISCONNECT": // es como lo de exit pero llendo aeste caso
      default: // msj para todos
+     	texto := strings.TrimSpace(entrada)
+     	if len(texto) == 0 {
+	   return
+	}
 	codificado.Encode(comun.Mensaje{
 		Type: "PUBLIC_TEXT",
 		Text: entrada,

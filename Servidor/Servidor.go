@@ -6,6 +6,7 @@ import (
        "log"
        "net"
        "MyP/Comun"
+       "strings"
 )
 
 type Servidor struct {
@@ -68,6 +69,7 @@ func (s *Servidor) AtiendeConexion(conn net.Conn) {
 	if err != nil {
 	   fmt.Printf("Error al enviar respuesta %v\n", err)
 	}
+	fmt.Printf(">>> Mensaje del servidor: %s\n", respuesta)
 	return
      }
      if m.Type != "IDENTIFY" {
@@ -81,8 +83,16 @@ func (s *Servidor) AtiendeConexion(conn net.Conn) {
 	if err != nil {
 	   fmt.Printf("Error al enviar respuesta %v\n", err)
 	}
+	fmt.Printf("Mensaje del servidor: %s\n", respuesta)
 	return
      }
+
+     msj, err := json.Marshal(m)
+	 if err != nil {
+	    fmt.Printf("Error al recibir mensaje: %v\n", err)
+	 }
+
+     fmt.Printf("<<< %s\n", msj)
 
      if _, existe :=
      s.clientes[m.Username]; existe{
@@ -94,6 +104,12 @@ func (s *Servidor) AtiendeConexion(conn net.Conn) {
 	}
 	codificado := json.NewEncoder(conn)
 	codificado.Encode(respuesta)
+	data, err := json.Marshal(respuesta)
+	 if err != nil {
+	    fmt.Printf("Error al recibir mensaje: %v\n", err)
+	 }
+	 
+	 fmt.Printf(">>> %s\n", data)
 	return
      }
 
@@ -113,7 +129,14 @@ func (s *Servidor) AtiendeConexion(conn net.Conn) {
      Operation:	   "IDENTIFY",
      Result:  	   "SUCCESS",
      Extra:   	   m.Username,
-     }     
+     }
+
+     data, err := json.Marshal(respuesta)
+	 if err != nil {
+	    fmt.Printf("Error al recibir mensaje: %v\n", err)
+	 }
+	 
+	 fmt.Printf(">>> %s\n", data)
      
      codificado := json.NewEncoder(conn)
      err = codificado.Encode(respuesta)
@@ -129,9 +152,14 @@ func (s *Servidor) AtiendeConexion(conn net.Conn) {
 	    fmt.Printf("Cliente desconectado: %v\n", err)
 	    return
 	 }
-
-	 //fmt.Printf("Mensaje recibido: %+v\n", mensaje)
-
+	 data, err := json.Marshal(mensaje)
+	 if err != nil {
+	    fmt.Printf("Error al recibir mensaje: %v\n", err)
+	 }
+	 
+	 fmt.Printf("<<< %s\n", data)
+	 
+	 
 	 s.ProcesaMensaje(mensaje, conn)
 
      } 
@@ -149,7 +177,7 @@ func (s *Servidor) ProcesaMensaje(mensaje comun.Mensaje, conn net.Conn) {
 
      case "TEXT":
      case "USERS":
-     	  s.UsuariosGeneral(conn)
+     	  s.ListaUsuarios(conn)
 	  
      case "NEW_ROOM":
      case "INVITE":
@@ -164,7 +192,7 @@ func (s *Servidor) ProcesaMensaje(mensaje comun.Mensaje, conn net.Conn) {
 }
 
 // Función que regresa la lista de usuarios de la sala principal
-func (s *Servidor) UsuariosGeneral(conn net.Conn) {
+func (s *Servidor) ListaUsuarios(conn net.Conn) {
      users := make(map[string]string)
      for nombre, cliente := range s.clientes {
 	      users[nombre] = cliente.estado
@@ -197,6 +225,10 @@ func (s *Servidor) NuevoUsuario(conn net.Conn) {
 
 // Función que manda el mensaje a todos
 func (s *Servidor) MensajePublico(mensaje comun.Mensaje, conn net.Conn, nombre string) {
+     msj := strings.TrimSpace(mensaje.Text)
+     if len(msj) == 0 {
+     	return
+     }
      for _, cliente := range s.clientes {
      	 if cliente.conexion == conn {
 	    continue

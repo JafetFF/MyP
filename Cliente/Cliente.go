@@ -98,6 +98,9 @@ func (c *Cliente) Conecta() {
 func InterpretaMensaje(entrada string, codificado *json.Encoder) {
      texto := strings.TrimSpace(entrada)
      palabra := strings.Fields(texto)
+     if len(palabra) == 0 {
+     	return
+     }
      switch palabra[0] {
      case "USERS": // lista de usuarios
      	  codificado.Encode(comun.Mensaje{
@@ -120,10 +123,7 @@ func InterpretaMensaje(entrada string, codificado *json.Encoder) {
      case "LEAVE_ROOM":
      case "DISCONNECT": // es como lo de exit pero llendo aeste caso
      default: // msj para todos
-     	texto := strings.TrimSpace(entrada)
-     	if len(texto) == 0 {
-	   return
-	}
+     	
 	codificado.Encode(comun.Mensaje{
 		Type: "PUBLIC_TEXT",
 		Text: entrada,

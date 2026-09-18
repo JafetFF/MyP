@@ -11,7 +11,7 @@ import (
 
 type Servidor struct {
      puerto   string
-     clientes map[string]ClienteConectado
+     clientes map[string]*ClienteConectado
 }
 
 type ClienteConectado struct {
@@ -24,7 +24,7 @@ type ClienteConectado struct {
 func NuevoServidor(puerto string) *Servidor {
      return &Servidor{
      	    puerto:   puerto,
-	    clientes: make(map[string]ClienteConectado),
+	    clientes: make(map[string]*ClienteConectado),
      }
 }
 
@@ -50,7 +50,7 @@ func (s *Servidor) Iniciar() {
 // Función que atiende conexiones
 func (s *Servidor) AtiendeConexion(conn net.Conn) {
      if s.clientes == nil {
-     	s.clientes = make(map[string]ClienteConectado)
+     	s.clientes = make(map[string]*ClienteConectado)
      }
      
      fmt.Printf("Nueva Conexión desde %s\n", conn.RemoteAddr().String())
@@ -113,7 +113,7 @@ func (s *Servidor) AtiendeConexion(conn net.Conn) {
 	return
      }
 
-     s.clientes[m.Username] = ClienteConectado{
+     s.clientes[m.Username] = &ClienteConectado{
      	nombre:   m.Username,
 	estado:   "ACTIVE",
 	conexion: conn,
@@ -205,6 +205,7 @@ func (s *Servidor) CambiaEstado(m comun.Mensaje, conn net.Conn, nombre string) {
      	m.Status != "BUSY" {
 	return
      }
+     cliente.estado = m.Status
      for _, cliente := range s.clientes {
      	 if cliente.conexion == conn {
 	    continue
@@ -214,6 +215,12 @@ func (s *Servidor) CambiaEstado(m comun.Mensaje, conn net.Conn, nombre string) {
 	      Username: nombre,
 	      Status:   m.Status,
 	 }
+	 data, err := json.Marshal(respuesta)
+	 if err != nil {
+	    fmt.Printf("Error al recibir mensaje: %v\n", err)
+	 }
+	 
+	 fmt.Printf(">>> %s\n", data)
 	 codificador := json.NewEncoder(cliente.conexion)
 	 codificador.Encode(respuesta)
      }
@@ -231,6 +238,12 @@ func (s *Servidor) ListaUsuarios(conn net.Conn) {
 	  	    Type:  "USER_LIST",
 		    Users: users,
 	  }
+	  data, err := json.Marshal(respuesta)
+	  if err != nil {
+	     fmt.Printf("Error al recibir mensaje: %v\n", err)
+	  }
+	 
+	  fmt.Printf(">>> %s\n", data)
 	  codificado := json.NewEncoder(conn)
 	  codificado.Encode(respuesta)
 }
@@ -249,6 +262,12 @@ func (s *Servidor) NuevoUsuario(conn net.Conn) {
 	  	    Type:     "NEW_USER",
 		    Username: nombre,
 	  }
+	  data, err := json.Marshal(respuesta)
+ 	  if err != nil {
+	     fmt.Printf("Error al recibir mensaje: %v\n", err)
+	  }
+	 
+	  fmt.Printf(">>> %s\n", data)
 	  codificado.Encode(respuesta)
      }
 }
@@ -268,6 +287,13 @@ func (s *Servidor) MensajePublico(mensaje comun.Mensaje, conn net.Conn, nombre s
 	      Username: nombre,
 	      Text:     mensaje.Text,
 	 }
+	 data, err := json.Marshal(respuesta)
+	 if err != nil {
+	    fmt.Printf("Error al recibir mensaje: %v\n", err)
+	 }
+	 
+	 fmt.Printf(">>> %s\n", data)
+	 
 	 codificador := json.NewEncoder(cliente.conexion)
 	 codificador.Encode(respuesta)
      }

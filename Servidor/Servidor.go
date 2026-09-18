@@ -170,6 +170,10 @@ func (s *Servidor) ProcesaMensaje(mensaje comun.Mensaje, conn net.Conn) {
      switch mensaje.Type {
      case "NEW_USER":
      	  s.NuevoUsuario(conn)
+
+     case "STATUS":
+     	  nombre := s.GetNombre(conn)
+     	  s.CambiaEstado(mensaje, conn, nombre)
      	  
      case "PUBLIC_TEXT":
      	  nombre := s.GetNombre(conn)
@@ -190,6 +194,32 @@ func (s *Servidor) ProcesaMensaje(mensaje comun.Mensaje, conn net.Conn) {
      // cuando el mensaje sea inválido
      }
 }
+
+// Función para cambiar el estado de un usuario y avisar a los demás
+func (s *Servidor) CambiaEstado(m comun.Mensaje, conn net.Conn, nombre string) {
+     cliente, existe := s.clientes[nombre]
+     if existe && cliente.estado == m.Status {
+     	return
+     }
+     if m.Status != "ACTIVE" && m.Status != "AWAY" &&
+     	m.Status != "BUSY" {
+	return
+     }
+     for _, cliente := range s.clientes {
+     	 if cliente.conexion == conn {
+	    continue
+	 }
+	 respuesta := comun.Mensaje{
+	      Type:     "NEW_STATUS",
+	      Username: nombre,
+	      Status:   m.Status,
+	 }
+	 codificador := json.NewEncoder(cliente.conexion)
+	 codificador.Encode(respuesta)
+     }
+}
+
+
 
 // Función que regresa la lista de usuarios de la sala principal
 func (s *Servidor) ListaUsuarios(conn net.Conn) {

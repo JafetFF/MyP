@@ -26,9 +26,7 @@ func NuevoCliente(direccion string, nombre string) *Cliente {
 
 // Función que conecta el cliente con el servidor
 func (c *Cliente) Conecta() {
-
-     
-     
+  
      conn, err := net.Dial("tcp", c.direccion)
 
      if err != nil {
@@ -98,12 +96,21 @@ func (c *Cliente) Conecta() {
 
 // Función auxiliar que interpreta lo que el cliente solicita al servidor
 func InterpretaMensaje(entrada string, codificado *json.Encoder) {
-     switch entrada {
+     texto := strings.TrimSpace(entrada)
+     palabra := strings.Fields(texto)
+     switch palabra[0] {
      case "USERS": // lista de usuarios
      	  codificado.Encode(comun.Mensaje{
 		Type: "USERS",
 	  })
      case "STATUS": // estado
+     	  if len(palabra) != 2 {
+	     return
+	  }
+     	  codificado.Encode(comun.Mensaje{
+		Type:   "STATUS",
+		Status: palabra[1],
+	  })
      case "TEXT": // msj privado
      case "NEW_ROOM":
      case "INVITE":
@@ -147,7 +154,8 @@ func ProcesaMensaje(mensaje comun.Mensaje) {
 	  fmt.Print("> ")
 	  
      case "NEW_STATUS":
-     	  fmt.Printf("%s ha cambiado a %s\n", mensaje.Username, mensaje.Status)
+     	  fmt.Printf("%s ha cambiado su estado a %s\n", mensaje.Username, mensaje.Status)
+	  fmt.Print("> ")
 	  
      case "USER_LIST":
      	  fmt.Printf("Lista de usuarios:\n")
@@ -168,7 +176,7 @@ func ProcesaMensaje(mensaje comun.Mensaje) {
      case "LEFT_ROOM":
      case "DISCONNECTED":
      case "RESPONSE":
-     	  fmt.Printf("Respuesta: %s - %s\n", mensaje.Operation, mensaje.Result)
+     	  fmt.Printf("Respuesta: %s  %s\n", mensaje.Operation, mensaje.Result)
      default:
 	fmt.Printf("Mensaje no reconocido: %s\n", mensaje.Type)
 	  

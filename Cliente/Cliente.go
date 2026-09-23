@@ -55,13 +55,6 @@ func (c *Cliente) Conecta() {
      if m.Result != "SUCCESS" {
      	return
      }
-
-     nuevo_usuario := comun.Mensaje{
-     	 Type: "NEW_USER",
-	 Username: c.nombre,
-     }
-
-     codificado.Encode(nuevo_usuario)
      
      go EscuchaServidor(conn, decodificado)
 
@@ -79,55 +72,9 @@ func (c *Cliente) Conecta() {
  	   })
 	   return
 	}
-
-	//data, err := json.Marshal(entrada)
-	//if err != nil {
-	  // fmt.Printf("Error al recibir mensaje: %v\n", err)
-	//}
-	 
-	//fmt.Printf("Mensaje recibido: %s\n", data)
-	//fmt.Printf("Mensaje recibido por el cliente: %s\n", entrada)
-	// AQui no va ajajajajaj
 	
 	InterpretaMensaje(entrada, codificado)
 
-     }
-}
-
-// Función auxiliar que interpreta lo que el cliente solicita al servidor
-func InterpretaMensaje(entrada string, codificado *json.Encoder) {
-     texto := strings.TrimSpace(entrada)
-     palabra := strings.Fields(texto)
-     if len(palabra) == 0 {
-     	return
-     }
-     switch palabra[0] {
-     case "USERS": // lista de usuarios
-     	  codificado.Encode(comun.Mensaje{
-		Type: "USERS",
-	  })
-     case "STATUS": // estado
-     	  if len(palabra) != 2 {
-	     return
-	  }
-     	  codificado.Encode(comun.Mensaje{
-		Type:   "STATUS",
-		Status: palabra[1],
-	  })
-     case "TEXT": // msj privado
-     case "NEW_ROOM":
-     case "INVITE":
-     case "JOIN_ROOM":
-     case "ROOM_USERS":
-     case "ROOM_TEXT":
-     case "LEAVE_ROOM":
-     case "DISCONNECT": // es como lo de exit pero llendo aeste caso
-     default: // msj para todos
-     	
-	codificado.Encode(comun.Mensaje{
-		Type: "PUBLIC_TEXT",
-		Text: entrada,
-	})
      }
 }
 
@@ -146,40 +93,3 @@ func EscuchaServidor(conn net.Conn, decodificado *json.Decoder) {
      }
 }
 
-// Función que procesa un mensaje
-func ProcesaMensaje(mensaje comun.Mensaje) {
-     switch mensaje.Type {
-     case "NEW_USER":
-     	  fmt.Printf("Nuevo usuario conectado: %s\n", mensaje.Username)
-	  fmt.Print("> ")
-	  
-     case "NEW_STATUS":
-     	  fmt.Printf("%s ha cambiado su estado a %s\n", mensaje.Username, mensaje.Status)
-	  fmt.Print("> ")
-	  
-     case "USER_LIST":
-     	  fmt.Printf("Lista de usuarios:\n")
-	  for usuario, estado := range mensaje.Users{
-	      	       fmt.Printf("> %s: %s\n", usuario, estado)
-	  }
-	  fmt.Print("> ")
-	  
-     case "TEXT_FROM":
-     	  fmt.Printf("%s: %s\n", mensaje.Username, mensaje.Text)
-	  
-     case "PUBLIC_TEXT_FROM":
-     	  fmt.Printf("%s: %s\n", mensaje.Username, mensaje.Text)
-	  fmt.Print("> ")
-	  
-     case "JOINED_ROOM":
-     case "ROOM_USER_LIST":
-     case "LEFT_ROOM":
-     case "DISCONNECTED":
-     case "RESPONSE":
-     	  fmt.Printf("Respuesta: %s  %s\n", mensaje.Operation, mensaje.Result)
-     default:
-	fmt.Printf("Mensaje no reconocido: %s\n", mensaje.Type)
-	  
-     }
-
-}

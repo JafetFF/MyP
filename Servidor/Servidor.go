@@ -7,6 +7,7 @@ import (
        "net"
        "MyP/Comun"
        "strings"
+       "io"
 )
 
 type Servidor struct {
@@ -170,7 +171,10 @@ func (s *Servidor) AtiendeConexion(conn net.Conn) {
 
 	 err := decodificado.Decode(&mensaje)
 	 if err != nil {
-	    fmt.Printf("Cliente desconectado: %v\n", err)
+	    if err == io.EOF {
+	       return
+	    }
+	    fmt.Printf("Error al recibir mensaje: %v\n", err)
 	    return
 	 }
 	 data, err := json.Marshal(mensaje)

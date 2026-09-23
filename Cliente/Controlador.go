@@ -41,9 +41,13 @@ func InterpretaMensaje(entrada string, codificado *json.Encoder) {
      case "ROOM_USERS":
      case "ROOM_TEXT":
      case "LEAVE_ROOM":
-     case "DISCONNECT": // es como lo de exit pero llendo aeste caso
+     case "DISCONNECT": 
+     	  codificado.Encode(comun.Mensaje{
+		Type:	  "DISCONNECT",
+	  })
+	  return
+     
      default: // msj para todos
-     	
 	codificado.Encode(comun.Mensaje{
 		Type: "PUBLIC_TEXT",
 		Text: entrada,
@@ -73,6 +77,8 @@ func ProcesaMensaje(mensaje comun.Mensaje) {
      case "ROOM_USER_LIST":
      case "LEFT_ROOM":
      case "DISCONNECTED":
+     	  AvisoDesconectado(mensaje)
+
      case "RESPONSE":
      	  Respuesta(mensaje)
      default:

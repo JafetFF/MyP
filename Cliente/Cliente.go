@@ -60,6 +60,7 @@ func (c *Cliente) Conecta() {
 
      lector := bufio.NewReader(os.Stdin)
      for{
+	     
 	fmt.Print("> ")
 	entrada, err := lector.ReadString('\n')
 	if err != nil {

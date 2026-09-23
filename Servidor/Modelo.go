@@ -145,3 +145,25 @@ func (s *Servidor) MensajePublico(mensaje comun.Mensaje, conn net.Conn, nombre s
 	 codificador.Encode(respuesta)
      }
 }
+
+// Función que manda el mensaje a todos
+func (s *Servidor) UsuarioDesconectado(mensaje comun.Mensaje, conn net.Conn, nombre string) {
+     for _, cliente := range s.clientes {
+     	 if cliente.conexion == conn {
+	    continue
+	 }
+	 respuesta := comun.Mensaje{
+	      Type:     "DISCONNECTED",
+	      Username: nombre,
+	 }
+	 data, err := json.Marshal(respuesta)
+	 if err != nil {
+	    fmt.Printf("Error al recibir mensaje: %v\n", err)
+	 }
+	 
+	 fmt.Printf(">>> %s\n", data)
+	 
+	 codificador := json.NewEncoder(cliente.conexion)
+	 codificador.Encode(respuesta)
+     }
+}

@@ -36,6 +36,11 @@ func Respuesta(mensaje comun.Mensaje) {
 	fmt.Printf("Respuesta: %s  %s\n", mensaje.Operation, mensaje.Result)
 }
 
+func AvisoDesconectado(mensaje comun.Mensaje) {
+     	fmt.Printf("Cliente desconectado: %s\n", mensaje.Username)
+	fmt.Printf("> ")
+}
+
 func MensajeDesconocido(mensaje comun.Mensaje) {
 	fmt.Printf("Mensaje no reconocido: %s\n", mensaje.Type)
 }

@@ -31,7 +31,7 @@ func (s *Servidor) ProcesaMensaje(mensaje comun.Mensaje, conn net.Conn) {
      case "LEAVE_ROOM":
      case "DISCONNECT":
      	  nombre := s.GetNombre(conn)
-     	  s.Desconectado(mensaje, conn, nombre)
+     	  s.UsuarioDesconectado(mensaje, conn, nombre)
 
      default:
      // cuando el mensaje sea inválido

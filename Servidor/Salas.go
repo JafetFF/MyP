@@ -65,6 +65,7 @@ func (s *Sala) ListaSala(conn net.Conn) {
      codificado.Encode(respuesta)
 }
 
+// Función que regresa true si el cliente esta en una sala, false en otro caso
 func (s *Sala) ContieneCliente(nombre string) bool {
      _, existe := s.listaUsers[nombre]
      return existe
@@ -91,6 +92,52 @@ func (s *Servidor) UneCliente(m comun.Mensaje, nombre string, sala *Sala) {
      codificador.Encode(respuesta)
 }
 
-// func EnviaMensajeSala() {}
+// Función que manda el mensaje a todos
+func (sala *Sala) EnviaMensajeSala(mensaje comun.Mensaje, nombre string, conn net.Conn) {
+     //msj := strings.TrimSpace(mensaje.Text)
+     //if len(msj) == 0 {
+     //	return
+     //}
+     for _, cliente := range sala.listaUsers {
+     	 if cliente.conexion == conn {
+	    continue
+	 }
+	 respuesta := comun.Mensaje{
+	      Type:     "ROOM_TEXT_FROM",
+	      Roomname: mensaje.Roomname,
+	      Username: nombre,
+	      Text:     mensaje.Text,
+	 }
+	 data, err := json.Marshal(respuesta)
+	 if err != nil {
+	    fmt.Printf("Error al recibir mensaje: %v\n", err)
+	 }
+	 
+	 fmt.Printf(">>> %s\n", data)
+	 
+	 codificador := json.NewEncoder(cliente.conexion)
+	 codificador.Encode(respuesta)
+     }
+}
 
-// func SalirSala() {}
+func (sala *Sala) DejaSala(m comun.Mensaje, nombre string, conn net.Conn) {
+     for _, cliente := range sala.listaUsers {
+     	 if cliente.conexion == conn {
+	    continue
+	 }
+	 respuesta := comun.Mensaje{
+	      Type:     "LEFT_ROOM",
+	      Roomname: mensaje.Roomname,
+	      Username: nombre,
+	 }
+	 data, err := json.Marshal(respuesta)
+	 if err != nil {
+	    fmt.Printf("Error al recibir mensaje: %v\n", err)
+	 }
+	 
+	 fmt.Printf(">>> %s\n", data)
+	 
+	 codificador := json.NewEncoder(cliente.conexion)
+	 codificador.Encode(respuesta)
+     }
+}

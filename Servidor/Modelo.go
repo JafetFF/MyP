@@ -233,7 +233,7 @@ func (s *Servidor) FueraDeSala(m comun.Mensaje, nombre string, conn net.Conn) {
      
      respuesta := comun.Mensaje{
      	       Type:      "RESPONSE",
-	       Operation: "ROOM_USERS",
+	       Operation: m.Type,
 	       Result:    "NOT_JOINED",
 	       Extra:  	  m.Roomname,
      }
@@ -289,4 +289,27 @@ func (s *Servidor) NoInvitado(m comun.Mensaje, nombre string, conn net.Conn) {
      cliente, _ := s.clientes[nombre]
      codificador := json.NewEncoder(cliente.conexion)
      codificador.Encode(respuesta)
+}
+
+// Función para anunciar la llegada de un nuevo cliente a una sala
+func (s *Servidor) JoinedRoom(m comun.Mensaje, nombre string, conn net.Conn, sala *Sala) {
+     
+     for _, cliente := range sala.listaUsers {
+     	 if cliente.conexion == conn {
+	    continue
+	 }
+	 respuesta := comun.Mensaje{
+	      Type:     "JOINED_ROOM",
+	      Roomname: m.Roomname,
+	      Username: nombre,
+	 }
+	 data, err := json.Marshal(respuesta)
+	 if err != nil {
+	    fmt.Printf("Error al recibir mensaje: %v\n", err)
+	 }
+	 
+	 fmt.Printf(">>>prueba %s\n", data)
+	 codificador := json.NewEncoder(cliente.conexion)
+	 codificador.Encode(respuesta)
+     }
 }

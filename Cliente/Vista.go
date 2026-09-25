@@ -43,6 +43,10 @@ func TextoPublico(mensaje comun.Mensaje) {
      fmt.Printf("%s: %s\n> ", mensaje.Username, mensaje.Text)
 }
 
+func TextoSala(mensaje comun.Mensaje) {
+     fmt.Printf("<%s> %s: %s\n> ", mensaje.Roomname, mensaje.Username, mensaje.Text)
+}
+
 func Respuesta(mensaje comun.Mensaje) {
      switch mensaje.Operation {
      case "TEXT":
@@ -60,10 +64,28 @@ func Respuesta(mensaje comun.Mensaje) {
      	     fmt.Printf("RESPUESTA: La sala %s no existe\n> ", mensaje.Extra)
 	  }
 	  if mensaje.Result == "NOT_JOINED" {
-	     fmt.Printf("RESPUESTA: No pedir la lista ni invitar a otros clientes a la sala %s porque no te has unido a ella\n> ", mensaje.Extra)
+	     fmt.Printf("RESPUESTA: No puedes pedir la lista ni invitar a otros clientes a la sala %s porque no te has unido a ella\n> ", mensaje.Extra)
 	  }
      case "INVITE":
-       	  fmt.Printf("RESPUESTA: No puedes invitar a %s a unirse a una sala, pues %s no existe\n> ", mensaje.Extra, mensaje.Extra)   	  
+       	  fmt.Printf("RESPUESTA: No puedes invitar a %s a unirse a una sala, pues %s no existe\n> ", mensaje.Extra, mensaje.Extra)
+     case "JOIN_ROOM":
+     	  if mensaje.Result == "SUCCESS" {
+     	     fmt.Printf("	Te has unido a la sala %s\n> ", mensaje.Roomname)
+	  }
+	  if mensaje.Result == "NO_SUCH_ROOM" {
+	     fmt.Printf("RESPUESTA: La sala %s no existe\n> ", mensaje.Extra)
+	  }
+	  if mensaje.Result == "NOT_INVITED" {
+	     fmt.Printf("RESPUESTA: No te puedes unir a la sala %s porque no has recibido una invitación\n> ", mensaje.Extra)
+	  }
+
+     case "ROOM_TEXT":
+     	  if mensaje.Result == "NO_SUCH_ROOM" {
+	     fmt.Printf("RESPUESTA: La sala %s no existe\n> ", mensaje.Extra)
+	  }
+	  if mensaje.Result == "NOT_JOINED" {
+	     fmt.Printf("RESPUESTA: No puedes enviar un mensaje a la sala %s porque no te has unido a ella\n> ", mensaje.Extra)
+	  }
      default:
 
      }
@@ -72,6 +94,10 @@ func Respuesta(mensaje comun.Mensaje) {
 func AvisoDesconectado(mensaje comun.Mensaje) {
      fmt.Printf("Cliente desconectado: %s\n", mensaje.Username)
      fmt.Printf("> ")
+}
+
+func UnidoASala(mensaje comun.Mensaje) {
+     fmt.Printf("Se ha unido %s a la sala %s\n> ", mensaje.Username, mensaje.Roomname)
 }
 
 func MensajeDesconocido(mensaje comun.Mensaje) {

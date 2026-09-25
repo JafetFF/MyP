@@ -72,9 +72,11 @@ func (s *Servidor) ProcesaMensaje(mensaje comun.Mensaje, conn net.Conn) {
 	  }
 	  if !sala.invitados[nombre] {
 	     s.NoInvitado(mensaje, nombre, conn)
+	     return
 	  }
 	  
 	  s.UneCliente(mensaje, nombre, sala)
+	  s.JoinedRoom(mensaje, nombre, conn, sala)
 
 
      case "ROOM_USERS":
@@ -92,7 +94,31 @@ func (s *Servidor) ProcesaMensaje(mensaje comun.Mensaje, conn net.Conn) {
      	  sala.ListaSala(conn)
 
      case "ROOM_TEXT":
+     	  nombre := s.GetNombre(conn)
+	  sala, existe := s.salas[mensaje.Roomname]
+	  if !existe {
+	     s.NoExisteSala(mensaje, nombre, conn)
+	     return
+	  }
+	  if !sala.ContieneCliente(nombre) {
+	     s.FueraDeSala(mensaje, nombre, conn)
+	     return
+	  }
+	  sala.EnviaMensajeSala(mensaje, nombre, conn)
+
      case "LEAVE_ROOM":
+     	  nombre := s.GetNombre(conn)
+	  sala, existe := s.salas[mensaje.Roomname]
+	  if !existe {
+	     s.NoExisteSala(mensaje, nombre, conn)
+	     return
+	  }
+	  if !sala.ContieneCliente(nombre) {
+	     s.FueraDeSala(mensaje, nombre, conn)
+	     return
+	  }
+	  sala.DejaSala(mensaje, nombre, conn)
+
      case "DISCONNECT":
      	  nombre := s.GetNombre(conn)
      	  s.UsuarioDesconectado(mensaje, conn, nombre)

@@ -30,7 +30,7 @@ func (c *Cliente) Conecta() {
      conn, err := net.Dial("tcp", c.direccion)
 
      if err != nil {
-     	log.Printf("Error al conectar: %v", err)
+     	fmt.Printf("Debes poner una IP:HOST válida\n")
 	return
      }
      defer conn.Close()
@@ -53,6 +53,7 @@ func (c *Cliente) Conecta() {
      }
 
      if m.Result != "SUCCESS" {
+     	ProcesaMensaje(m)
      	return
      }
      
@@ -81,12 +82,13 @@ func (c *Cliente) Conecta() {
 
 // Función que se mantiene a la espera de un mensaje nuevo
 func EscuchaServidor(conn net.Conn, decodificado *json.Decoder) {
-     	 
+
+     
      for {
 	 var m comun.Mensaje
      	 err := decodificado.Decode(&m)
 	 if err != nil {
-	    log.Printf("Error al recibir el mensaje: %v", err)
+	    fmt.Printf("Error al recibir el mensaje")
 	    return
 	 }
 

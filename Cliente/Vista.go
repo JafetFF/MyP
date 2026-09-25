@@ -28,12 +28,22 @@ func TextoPrivado(mensaje comun.Mensaje) {
 }
 
 func TextoPublico(mensaje comun.Mensaje) {
-	fmt.Printf("%s: %s\n", mensaje.Username, mensaje.Text)
-	fmt.Print("> ")
+	fmt.Printf("%s: %s\n> ", mensaje.Username, mensaje.Text)
 }
 
 func Respuesta(mensaje comun.Mensaje) {
-	fmt.Printf("Respuesta: %s  %s\n", mensaje.Operation, mensaje.Result)
+     switch mensaje.Operation {
+     case "TEXT":
+     	  fmt.Printf("RESPUESTA: No se envió el mensaje porque el cliente %s no existe\n> ", mensaje.Extra)
+     case "IDENTIFY":
+     	  fmt.Printf("RESPUESTA: Elije otro nombre. Ya existe un cliente llamado %s\n", mensaje.Extra)
+     case "INVALID":
+     	  if mensaje.Result == "NOT_IDENTIFIED" {
+	     fmt.Printf("RESPUESTA: Debes identificarte con un nombre\n")
+	  }	     
+     default:
+
+     }
 }
 
 func AvisoDesconectado(mensaje comun.Mensaje) {

@@ -66,11 +66,13 @@ func (s *Servidor) AtiendeConexion(conn net.Conn) {
 	Result:    "INVALID",
 	}
 	codificado := json.NewEncoder(conn)
-	err = codificado.Encode(respuesta)
+	codificado.Encode(respuesta)
+	data, err := json.Marshal(respuesta)
 	if err != nil {
-	   fmt.Printf("Error al enviar respuesta %v\n", err)
+	   fmt.Printf("Error al recibir mensaje: %v\n", err)
 	}
-	fmt.Printf(">>> Mensaje del servidor: %s\n", respuesta)
+	 
+	fmt.Printf(">>> %s\n", data)
 	return
      }
      if m.Type != "IDENTIFY" {
@@ -80,18 +82,20 @@ func (s *Servidor) AtiendeConexion(conn net.Conn) {
 	Result:    "NOT_IDENTIFIED",
 	}
 	codificado := json.NewEncoder(conn)
-	err = codificado.Encode(respuesta)
+	codificado.Encode(respuesta)
+	data, err := json.Marshal(respuesta)
 	if err != nil {
-	   fmt.Printf("Error al enviar respuesta %v\n", err)
+	   fmt.Printf("Error al recibir mensaje: %v\n", err)
 	}
-	fmt.Printf("Mensaje del servidor: %s\n", respuesta)
+	 
+	fmt.Printf(">>> %s\n", data)
 	return
      }
      if strings.TrimSpace(m.Username) == "" {
      	respuesta := comun.Mensaje{
 	Type: 	   "RESPONSE",
      	Operation: "INVALID",
-	Result:    "INVALID",
+	Result:    "NOT_IDENTIFIED",
 	}
 	codificado := json.NewEncoder(conn)
 	codificado.Encode(respuesta)
@@ -123,11 +127,12 @@ func (s *Servidor) AtiendeConexion(conn net.Conn) {
 	codificado := json.NewEncoder(conn)
 	codificado.Encode(respuesta)
 	data, err := json.Marshal(respuesta)
-	 if err != nil {
-	    fmt.Printf("Error al recibir mensaje: %v\n", err)
-	 }
+	if err != nil {
+	   fmt.Printf("Error al recibir mensaje: %v\n", err)
+	}
 	 
-	 fmt.Printf(">>> %s\n", data)
+	fmt.Printf(">>> %s\n", data)
+	conn.Close()
 	return
      }
 

@@ -28,6 +28,7 @@ func InterpretaMensaje(entrada string, codificado *json.Encoder) {
 	  })
      case "TEXT": // msj privado
      	  if len(palabra) < 3 { // desconectaremos depués al usuario
+	     
 	     return
 	  } 
      	  codificado.Encode(comun.Mensaje{

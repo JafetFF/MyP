@@ -46,7 +46,25 @@ func InterpretaMensaje(entrada string, codificado *json.Encoder) {
 	  })
      	  
      case "INVITE":
+     	  if len(palabra) < 3 {
+	     return // lo mismo de desconectarlo
+	  }
+	  usuarios := palabra[2:]
+	  codificado.Encode(comun.Mensaje{
+		Type:	   "INVITE",
+		Roomname:  palabra[1],
+		Usernames: usuarios,
+	  })
+
      case "JOIN_ROOM":
+     	  if len(palabra) == 1 {
+	     return
+	  }
+	  codificado.Encode(comun.Mensaje{
+		Type:	  "JOIN_ROOM",
+		Roomname: palabra[1],
+	  })
+
      case "ROOM_USERS":
      	  if len(palabra) == 1 {
 	     return
@@ -89,6 +107,9 @@ func ProcesaMensaje(mensaje comun.Mensaje) {
 	  
      case "PUBLIC_TEXT_FROM":
      	  TextoPublico(mensaje)
+
+     case "INVITATION":
+     	  Invitacion(mensaje)
 	  
      case "JOINED_ROOM":
      case "ROOM_USER_LIST":

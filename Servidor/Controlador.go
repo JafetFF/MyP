@@ -30,7 +30,53 @@ func (s *Servidor) ProcesaMensaje(mensaje comun.Mensaje, conn net.Conn) {
 	  s.salas[mensaje.Roomname].AgregaCliente(s.clientes[nombre])
 	  
      case "INVITE":
+     	  nombre := s.GetNombre(conn)
+	  
+	  sala, existe := s.salas[mensaje.Roomname]
+	  if !existe {
+	     s.NoExisteSala(mensaje, nombre, conn)
+	     return
+	  }
+	  if !sala.ContieneCliente(nombre) {
+	     s.FueraDeSala(mensaje, nombre, conn)
+	     return
+	  }
+	  
+	  usuarios := mensaje.Usernames
+	  for i, cliente := range usuarios {
+	      _, existe := s.clientes[cliente]
+	      if !existe {
+	      	 s.ClienteInexistente(mensaje, nombre, conn, cliente)
+		 return
+	      }
+	      
+	      if sala.ContieneCliente(cliente) || sala.invitados[cliente] {
+	      	 usuarios = append(usuarios[:i], usuarios[i+1:]...)
+	      }
+
+	      sala.invitados[cliente] = true
+	  }
+	  
+	  s.InvitaClientes(mensaje, nombre, usuarios)
+
      case "JOIN_ROOM":
+     	  nombre := s.GetNombre(conn)
+	  
+	  sala, existe := s.salas[mensaje.Roomname]
+	  if !existe {
+	     s.NoExisteSala(mensaje, nombre, conn)
+	     return
+	  }
+	  if sala.ContieneCliente(nombre) {
+	     return
+	  }
+	  if !sala.invitados[nombre] {
+	     s.NoInvitado(mensaje, nombre, conn)
+	  }
+	  
+	  s.UneCliente(mensaje, nombre, sala)
+
+
      case "ROOM_USERS":
      	  nombre := s.GetNombre(conn)
      	  sala, existe := s.salas[mensaje.Roomname]

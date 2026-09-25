@@ -212,7 +212,7 @@ func (s *Servidor) NoExisteSala(m comun.Mensaje, nombre string, conn net.Conn) {
      
      respuesta := comun.Mensaje{
      	       Type:      "RESPONSE",
-	       Operation: "ROOM_USERS",
+	       Operation: m.Type,
 	       Result:    "NO_SUCH_ROOM",
 	       Extra:  	  m.Roomname,
      }
@@ -235,6 +235,48 @@ func (s *Servidor) FueraDeSala(m comun.Mensaje, nombre string, conn net.Conn) {
      	       Type:      "RESPONSE",
 	       Operation: "ROOM_USERS",
 	       Result:    "NOT_JOINED",
+	       Extra:  	  m.Roomname,
+     }
+     data, err := json.Marshal(respuesta)
+     if err != nil {
+     	fmt.Printf("Error al recibir mensaje: %v\n", err)
+     }
+	 
+     fmt.Printf(">>> %s\n", data)
+
+     cliente, _ := s.clientes[nombre]
+     codificador := json.NewEncoder(cliente.conexion)
+     codificador.Encode(respuesta)
+}
+
+// Función que manda un mensaje si un cliente que es invitado a una sala no existe
+func (s *Servidor) ClienteInexistente(m comun.Mensaje, nombre string, conn net.Conn, cliente string) {
+     
+     respuesta := comun.Mensaje{
+     	       Type:      "RESPONSE",
+	       Operation: "INVITE",
+	       Result:    "NO_SUCH_USER",
+	       Extra:  	  cliente,
+     }
+     data, err := json.Marshal(respuesta)
+     if err != nil {
+     	fmt.Printf("Error al recibir mensaje: %v\n", err)
+     }
+	 
+     fmt.Printf(">>> %s\n", data)
+
+     cl, _ := s.clientes[nombre]
+     codificador := json.NewEncoder(cl.conexion)
+     codificador.Encode(respuesta)
+}
+
+// Función que manda un mensaje si un cliente no fue invitado a una sala
+func (s *Servidor) NoInvitado(m comun.Mensaje, nombre string, conn net.Conn) {
+     
+     respuesta := comun.Mensaje{
+     	       Type:      "RESPONSE",
+	       Operation: "JOIN_ROOM",
+	       Result:    "NOT_INVITED",
 	       Extra:  	  m.Roomname,
      }
      data, err := json.Marshal(respuesta)

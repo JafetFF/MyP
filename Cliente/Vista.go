@@ -23,6 +23,14 @@ func ListaUsuarios(mensaje comun.Mensaje) {
 	fmt.Print("> ")
 }
 
+func ListaUsuariosSala(mensaje comun.Mensaje) {
+	fmt.Printf("Lista de usuarios de la sala %s:\n", mensaje.Roomname)
+	for usuario, estado := range mensaje.Users{
+      	         fmt.Printf("> %s: %s\n", usuario, estado)
+	}
+	fmt.Print("> ")
+}
+
 func TextoPrivado(mensaje comun.Mensaje) {
 	fmt.Printf("%s: %s\n", mensaje.Username, mensaje.Text)
 }
@@ -43,6 +51,8 @@ func Respuesta(mensaje comun.Mensaje) {
 	  }
      case "NEW_ROOM":
      	  fmt.Printf("\n	Se creó correctamente la sala %s\n> ", mensaje.Extra)
+     case "ROOM_USERS":
+     	  fmt.Printf("RESPUESTA: La sala %s no existe\n> ", mensaje.Extra)
 	  
      default:
 

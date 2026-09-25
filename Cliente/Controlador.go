@@ -48,6 +48,14 @@ func InterpretaMensaje(entrada string, codificado *json.Encoder) {
      case "INVITE":
      case "JOIN_ROOM":
      case "ROOM_USERS":
+     	  if len(palabra) == 1 {
+	     return
+	  }
+	  codificado.Encode(comun.Mensaje{
+		Type:	  "ROOM_USERS",
+		Roomname: palabra[1],
+	  })
+
      case "ROOM_TEXT":
      case "LEAVE_ROOM":
      case "DISCONNECT": 
@@ -84,6 +92,8 @@ func ProcesaMensaje(mensaje comun.Mensaje) {
 	  
      case "JOINED_ROOM":
      case "ROOM_USER_LIST":
+     	  ListaUsuariosSala(mensaje)
+
      case "LEFT_ROOM":
      case "DISCONNECTED":
      	  AvisoDesconectado(mensaje)

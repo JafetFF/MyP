@@ -27,12 +27,23 @@ func (s *Servidor) ProcesaMensaje(mensaje comun.Mensaje, conn net.Conn) {
      	  s.salas[mensaje.Roomname] = NuevaSala(mensaje.Roomname)
 	  nombre := s.GetNombre(conn)
 	  s.New_room(mensaje, nombre, conn)
-	  s.salas[mensaje.Roomname].AgregaCliente(s.cliente[nombre])
+	  s.salas[mensaje.Roomname].AgregaCliente(s.clientes[nombre])
 	  
      case "INVITE":
      case "JOIN_ROOM":
      case "ROOM_USERS":
-     	  
+     	  nombre := s.GetNombre(conn)
+     	  sala, existe := s.salas[mensaje.Roomname]
+	  if !existe {
+	     s.NoExisteSala(mensaje, nombre, conn)
+	     return
+	  }
+	  
+	  if !sala.ContieneCliente(nombre) {
+	     s.FueraDeSala(mensaje, nombre, conn)
+	     return
+	  }
+     	  sala.ListaSala(conn)
 
      case "ROOM_TEXT":
      case "LEAVE_ROOM":

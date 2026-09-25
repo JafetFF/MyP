@@ -127,7 +127,7 @@ func (sala *Sala) DejaSala(m comun.Mensaje, nombre string, conn net.Conn) {
 	 }
 	 respuesta := comun.Mensaje{
 	      Type:     "LEFT_ROOM",
-	      Roomname: mensaje.Roomname,
+	      Roomname: m.Roomname,
 	      Username: nombre,
 	 }
 	 data, err := json.Marshal(respuesta)

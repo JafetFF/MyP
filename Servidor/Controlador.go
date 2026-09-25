@@ -121,7 +121,13 @@ func (s *Servidor) ProcesaMensaje(mensaje comun.Mensaje, conn net.Conn) {
 
      case "DISCONNECT":
      	  nombre := s.GetNombre(conn)
-     	  s.UsuarioDesconectado(mensaje, conn, nombre)
+	  s.UsuarioDesconectado(mensaje, conn, nombre)
+	  for sala, _ := range s.salas {
+	      if s.salas[sala].ContieneCliente(nombre) {
+	      	 mensaje.Roomname = sala
+	      	 s.salas[sala].DejaSala(mensaje, nombre, conn)
+	      }
+	  }	  
 
      default:
      // cuando el mensaje sea inválido

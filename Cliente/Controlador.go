@@ -90,15 +90,14 @@ func InterpretaMensaje(entrada string, codificado *json.Encoder) {
 	     return
 	  }
 	  codificado.Encode(comun.Mensaje{
-		Type:	  "LEFT_ROOM",
-		Romename: palabra[1],
+		Type:	  "LEAVE_ROOM",
+		Roomname: palabra[1],
 	  })
 
      case "DISCONNECT": 
      	  codificado.Encode(comun.Mensaje{
 		Type:	  "DISCONNECT",
 	  })
-	  return
      
      default: // msj para todos
 	codificado.Encode(comun.Mensaje{
@@ -139,7 +138,7 @@ func ProcesaMensaje(mensaje comun.Mensaje) {
      	  TextoSala(mensaje)
 
      case "LEFT_ROOM":
-     	  ClienteDejaSala
+     	  ClienteDejaSala(mensaje)
 
      case "DISCONNECTED":
      	  AvisoDesconectado(mensaje)

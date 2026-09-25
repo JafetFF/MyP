@@ -86,6 +86,13 @@ func Respuesta(mensaje comun.Mensaje) {
 	  if mensaje.Result == "NOT_JOINED" {
 	     fmt.Printf("RESPUESTA: No puedes enviar un mensaje a la sala %s porque no te has unido a ella\n> ", mensaje.Extra)
 	  }
+     case "LEAVE_ROOM":
+     	  if mensaje.Result == "NO_SUCH_ROOM" {
+	     fmt.Printf("RESPUESTA: La sala %s no existe\n> ", mensaje.Extra)
+	  }
+	  if mensaje.Result == "NOT_JOINED" {
+	     fmt.Printf("RESPUESTA: No puedes salir de la sala %s porque no te has unido a ella\n> ", mensaje.Extra)
+	  }
      default:
 
      }
@@ -102,4 +109,8 @@ func UnidoASala(mensaje comun.Mensaje) {
 
 func MensajeDesconocido(mensaje comun.Mensaje) {
      fmt.Printf("Mensaje no reconocido: %s\n", mensaje.Type)
+}
+
+func ClienteDejaSala(m comun.Mensaje) {
+     fmt.Printf("%s salió de la sala %s\n> ", m.Username, m.Roomname)
 }

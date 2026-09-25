@@ -24,9 +24,16 @@ func (s *Servidor) ProcesaMensaje(mensaje comun.Mensaje, conn net.Conn) {
      	  s.ListaUsuarios(conn)
 	  
      case "NEW_ROOM":
+     	  s.salas[mensaje.Roomname] = NuevaSala(mensaje.Roomname)
+	  nombre := s.GetNombre(conn)
+	  s.New_room(mensaje, nombre, conn)
+	  s.salas[mensaje.Roomname].AgregaCliente(s.cliente[nombre])
+	  
      case "INVITE":
      case "JOIN_ROOM":
      case "ROOM_USERS":
+     	  
+
      case "ROOM_TEXT":
      case "LEAVE_ROOM":
      case "DISCONNECT":

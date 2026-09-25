@@ -6,11 +6,19 @@ type Sala struct {
      invitados  map[string]bool
 }
 
-// func CreaSala() {}
+func NuevaSala(nombre string) *Sala {
+     return &Sala{
+     	    nombre:	nombre,
+	    listaUsers: make(map[string]*ClienteConectado),
+	    invitados:  make(map[string]bool),
+     }
+}
 
 // func InvitaCliente() {}
 
-// func UnirseSala() {}
+func (s *Sala) AgregaCliente(nombre) {
+
+}
 
 // func GetUsuarios() {}
 

@@ -40,7 +40,10 @@ func Respuesta(mensaje comun.Mensaje) {
      case "INVALID":
      	  if mensaje.Result == "NOT_IDENTIFIED" {
 	     fmt.Printf("RESPUESTA: Debes identificarte con un nombre\n")
-	  }	     
+	  }
+     case "NEW_ROOM":
+     	  fmt.Printf("\n	Se creó correctamente la sala %s\n> ", mensaje.Extra)
+	  
      default:
 
      }

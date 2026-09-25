@@ -80,19 +80,19 @@ func (s *Servidor) ListaUsuarios(conn net.Conn) {
      users := make(map[string]string)
      for nombre, cliente := range s.clientes {
 	      users[nombre] = cliente.estado
-	  }
-	  respuesta := comun.Mensaje{
-	  	    Type:  "USER_LIST",
-		    Users: users,
-	  }
-	  data, err := json.Marshal(respuesta)
-	  if err != nil {
-	     fmt.Printf("Error al recibir mensaje: %v\n", err)
-	  }
+     }
+     respuesta := comun.Mensaje{
+ 	    Type:  "USER_LIST",
+	    Users: users,
+     }
+     data, err := json.Marshal(respuesta)
+     if err != nil {
+          fmt.Printf("Error al recibir mensaje: %v\n", err)
+     }
 	 
-	  fmt.Printf(">>> %s\n", data)
-	  codificado := json.NewEncoder(conn)
-	  codificado.Encode(respuesta)
+     fmt.Printf(">>> %s\n", data)
+     codificado := json.NewEncoder(conn)
+     codificado.Encode(respuesta)
 }
 
 // Función que avisa a los demás usuarios (si hay) que llegó alguien nuevo
@@ -166,4 +166,42 @@ func (s *Servidor) UsuarioDesconectado(mensaje comun.Mensaje, conn net.Conn, nom
 	 codificador := json.NewEncoder(cliente.conexion)
 	 codificador.Encode(respuesta)
      }
+}
+
+// Función que manda un mensaje después de intentarse crear una sala
+func (s *Servidor) New_room(m comun.Mensaje, nombre string, conn net.Conn) {
+     _, existe := s.salas[m.Roomname]
+     if !existe {
+     	respuesta := comun.Mensaje{
+     	       Type:      "RESPONSE",
+	       Operation: "NEW_ROOM",
+	       Result:    "ROOM_ALREADY_EXISTS",
+	       Extra:     m.Roomname,
+        }
+        data, err := json.Marshal(respuesta)
+        if err != nil {
+     	   fmt.Printf("Error al recibir mensaje: %v\n", err)
+        }
+	 
+        fmt.Printf(">>> %s\n", data)
+        codificador := json.NewEncoder(conn)
+        codificador.Encode(respuesta)
+     	return
+     }
+     respuesta := comun.Mensaje{
+     	       Type:      "RESPONSE",
+	       Operation: "NEW_ROOM",
+	       Result:    "SUCCESS",
+	       Extra:  	  m.Roomname,
+     }
+     data, err := json.Marshal(respuesta)
+     if err != nil {
+     	fmt.Printf("Error al recibir mensaje: %v\n", err)
+     }
+	 
+     fmt.Printf(">>> %s\n", data)
+
+     cliente, _ := s.clientes[nombre]
+     codificador := json.NewEncoder(cliente.conexion)
+     codificador.Encode(respuesta)
 }

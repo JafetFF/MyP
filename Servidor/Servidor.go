@@ -27,6 +27,7 @@ func NuevoServidor(puerto string) *Servidor {
      return &Servidor{
      	    puerto:   puerto,
 	    clientes: make(map[string]*ClienteConectado),
+	    salas:    make(map[string]*Sala),
      }
 }
 

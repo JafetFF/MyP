@@ -37,6 +37,14 @@ func InterpretaMensaje(entrada string, codificado *json.Encoder) {
 		Text:     strings.Join(palabra[2:], " "),
 	  }) 
      case "NEW_ROOM":
+     	  if len(palabra) == 1 { // lo desconectamos y enviamos el porque
+	     return
+	  }
+	  codificado.Encode(comun.Mensaje{
+		Type:     "NEW_ROOM",
+		Roomname: palabra[1],
+	  })
+     	  
      case "INVITE":
      case "JOIN_ROOM":
      case "ROOM_USERS":

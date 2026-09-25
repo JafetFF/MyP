@@ -13,6 +13,7 @@ import (
 type Servidor struct {
      puerto   string
      clientes map[string]*ClienteConectado
+     salas    map[string]*Sala
 }
 
 type ClienteConectado struct {

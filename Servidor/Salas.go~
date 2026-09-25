@@ -1,0 +1,7 @@
+package main
+
+type Sala struct {
+     nombre     string
+     listaUsers map[string]*ClienteConectado
+     
+}

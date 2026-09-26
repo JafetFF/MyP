@@ -174,7 +174,7 @@ func (s *Servidor) UsuarioDesconectado(mensaje comun.Mensaje, conn net.Conn, nom
 // Función que manda un mensaje después de intentarse crear una sala
 func (s *Servidor) New_room(m comun.Mensaje, nombre string, conn net.Conn) {
      _, existe := s.salas[m.Roomname]
-     if !existe {
+     if existe {
      	respuesta := comun.Mensaje{
      	       Type:      "RESPONSE",
 	       Operation: "NEW_ROOM",
@@ -191,6 +191,7 @@ func (s *Servidor) New_room(m comun.Mensaje, nombre string, conn net.Conn) {
         codificador.Encode(respuesta)
      	return
      }
+     s.salas[m.Roomname] = NuevaSala(m.Roomname)
      respuesta := comun.Mensaje{
      	       Type:      "RESPONSE",
 	       Operation: "NEW_ROOM",
@@ -324,6 +325,7 @@ func (s *Servidor) MsjInvalido(m comun.Mensaje, nombre string) {
             Type:      "RESPONSE",
       	    Operation: "INVALID",
 	    Result:    "INVALID",
+	    Extra:      m.Text,
       }
       data, err := json.Marshal(respuesta)
       if err != nil {

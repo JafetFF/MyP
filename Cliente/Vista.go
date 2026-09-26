@@ -32,7 +32,7 @@ func ListaUsuariosSala(mensaje comun.Mensaje) {
 }
 
 func Invitacion(mensaje comun.Mensaje) {
-     fmt.Printf("\n	Te ha invitado %s a unirte a la sala %s\n> ", mensaje.Username, mensaje.Roomname)
+     fmt.Printf("Te ha invitado %s a unirte a la sala %s\n> ", mensaje.Username, mensaje.Roomname)
 }
 
 func TextoPrivado(mensaje comun.Mensaje) {
@@ -50,49 +50,58 @@ func TextoSala(mensaje comun.Mensaje) {
 func Respuesta(mensaje comun.Mensaje) {
      switch mensaje.Operation {
      case "TEXT":
-     	  fmt.Printf("RESPUESTA: No se envió el mensaje porque el cliente %s no existe\n> ", mensaje.Extra)
+     	  fmt.Printf("RESPUESTA: No se envió el mensaje porque el cliente \"%s\" no existe\n> ", mensaje.Extra)
      case "IDENTIFY":
      	  fmt.Printf("RESPUESTA: Elije otro nombre. Ya existe un cliente llamado %s\n", mensaje.Extra)
      case "INVALID":
      	  if mensaje.Result == "NOT_IDENTIFIED" {
-	     fmt.Printf("RESPUESTA: Debes identificarte con un nombre\n")
+	     fmt.Printf("RESPUESTA: Debes identificarte con un nombre de máximo 8 caracteres\n")
+	     return
+	  }
+	  if mensaje.Extra != "" {
+	     fmt.Printf("RESPUESTA: %s\n> ", mensaje.Extra)
+	     return
 	  }
 	  fmt.Println("RESPUESTA: el JSON es inválido o no se recibieron los valores esperados")
      case "NEW_ROOM":
-     	  fmt.Printf("\n	Se creó correctamente la sala %s\n> ", mensaje.Extra)
+     	  if mensaje.Result == "ROOM_ALREADY_EXISTS" {
+	     fmt.Printf("La sala \"%s\" ya existe\n> ", mensaje.Extra)
+	     return
+	  }
+     	  fmt.Printf("Se creó correctamente la sala \"%s\"\n> ", mensaje.Extra)
      case "ROOM_USERS":
      	  if mensaje.Result == "NO_SUCH_ROOM" {
-     	     fmt.Printf("RESPUESTA: La sala %s no existe\n> ", mensaje.Extra)
+     	     fmt.Printf("RESPUESTA: La sala \"%s\" no existe\n> ", mensaje.Extra)
 	  }
 	  if mensaje.Result == "NOT_JOINED" {
-	     fmt.Printf("RESPUESTA: No puedes pedir la lista ni invitar a otros clientes a la sala %s porque no te has unido a ella\n> ", mensaje.Extra)
+	     fmt.Printf("RESPUESTA: No puedes pedir la lista ni invitar a otros clientes a la sala \"%s\" porque no te has unido a ella\n> ", mensaje.Extra)
 	  }
      case "INVITE":
-       	  fmt.Printf("RESPUESTA: No puedes invitar a %s a unirse a una sala, pues %s no existe\n> ", mensaje.Extra, mensaje.Extra)
+       	  fmt.Printf("RESPUESTA: No puedes invitar a \"%s\" a unirse a una sala, pues \"%s\" no existe\n> ", mensaje.Extra, mensaje.Extra)
      case "JOIN_ROOM":
      	  if mensaje.Result == "SUCCESS" {
-     	     fmt.Printf("	Te has unido a la sala %s\n> ", mensaje.Roomname)
+     	     fmt.Printf("Te has unido a la sala \"%s\"\n> ", mensaje.Extra)
 	  }
 	  if mensaje.Result == "NO_SUCH_ROOM" {
-	     fmt.Printf("RESPUESTA: La sala %s no existe\n> ", mensaje.Extra)
+	     fmt.Printf("RESPUESTA: La sala \"%s\" no existe\n> ", mensaje.Extra)
 	  }
 	  if mensaje.Result == "NOT_INVITED" {
-	     fmt.Printf("RESPUESTA: No te puedes unir a la sala %s porque no has recibido una invitación\n> ", mensaje.Extra)
+	     fmt.Printf("RESPUESTA: No te puedes unir a la sala \"%s\" porque no has recibido una invitación\n> ", mensaje.Extra)
 	  }
 
      case "ROOM_TEXT":
      	  if mensaje.Result == "NO_SUCH_ROOM" {
-	     fmt.Printf("RESPUESTA: La sala %s no existe\n> ", mensaje.Extra)
+	     fmt.Printf("RESPUESTA: La sala \"%s\" no existe\n> ", mensaje.Extra)
 	  }
 	  if mensaje.Result == "NOT_JOINED" {
-	     fmt.Printf("RESPUESTA: No puedes enviar un mensaje a la sala %s porque no te has unido a ella\n> ", mensaje.Extra)
+	     fmt.Printf("RESPUESTA: No puedes enviar un mensaje a la sala \"%s\" porque no te has unido a ella\n> ", mensaje.Extra)
 	  }
      case "LEAVE_ROOM":
      	  if mensaje.Result == "NO_SUCH_ROOM" {
-	     fmt.Printf("RESPUESTA: La sala %s no existe\n> ", mensaje.Extra)
+	     fmt.Printf("RESPUESTA: La sala \"%s\" no existe\n> ", mensaje.Extra)
 	  }
 	  if mensaje.Result == "NOT_JOINED" {
-	     fmt.Printf("RESPUESTA: No puedes salir de la sala %s porque no te has unido a ella\n> ", mensaje.Extra)
+	     fmt.Printf("RESPUESTA: No puedes salir de la sala \"%s\" porque no te has unido a ella\n> ", mensaje.Extra)
 	  }
      default:
 
@@ -105,7 +114,7 @@ func AvisoDesconectado(mensaje comun.Mensaje) {
 }
 
 func UnidoASala(mensaje comun.Mensaje) {
-     fmt.Printf("Se ha unido %s a la sala %s\n> ", mensaje.Username, mensaje.Roomname)
+     fmt.Printf("Se ha unido \"%s\" a la sala \"%s\"\n> ", mensaje.Username, mensaje.Roomname)
 }
 
 func MensajeDesconocido(mensaje comun.Mensaje) {

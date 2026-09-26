@@ -140,4 +140,11 @@ func (sala *Sala) DejaSala(m comun.Mensaje, nombre string, conn net.Conn) {
 	 codificador := json.NewEncoder(cliente.conexion)
 	 codificador.Encode(respuesta)
      }
+     delete(sala.listaUsers, nombre)
+     sala.invitados[nombre] = false
+}
+
+// Regresa true si la sala está vacía, false en otro caso
+func (sala *Sala) EsVacia() bool {
+     return len(sala.listaUsers) == 0
 }

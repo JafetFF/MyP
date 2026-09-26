@@ -3,13 +3,13 @@ package main
 import (
        "MyP/Comun"
        "net"
+       "unicode/utf8"
 )
 
 // Función que procesa un mensaje
-func (s *Servidor) ProcesaMensaje(mensaje comun.Mensaje, conn net.Conn) {
+func (s *Servidor) ProcesaMensaje(mensaje comun.Mensaje, conn net.Conn, nombre string) {
      switch mensaje.Type {
-     case "STATUS":
-     	  nombre := s.GetNombre(conn)
+     case "STATUS":	  
 	  pr := s.CambiaEstado(mensaje, conn, nombre)
      	  if !pr {
 	     s.UsuarioDesconectado(mensaje, conn, nombre)
@@ -23,19 +23,13 @@ func (s *Servidor) ProcesaMensaje(mensaje comun.Mensaje, conn net.Conn) {
 	  }
      	  
      case "PUBLIC_TEXT":
-     	  nombre := s.GetNombre(conn)
+     	  
      	  s.MensajePublico(mensaje, conn, nombre)
 
      case "TEXT":
-     	  nombre := s.GetNombre(conn)
-	  s.TextoPrivado(mensaje, conn, nombre)
-     
-     case "USERS":
-     	  s.ListaUsuarios(conn)
-	  
-     case "NEW_ROOM":
-     	  nombre := s.GetNombre(conn)
-     	  if mensaje.Roomname == "" {
+     	  
+	  if mensaje.Text == "" {
+	     s.MsjInvalido(mensaje, nombre)
 	     s.UsuarioDesconectado(mensaje, conn, nombre)
 	     for sala, _ := range s.salas {
 	     	  if s.salas[sala].ContieneCliente(nombre) {
@@ -46,13 +40,40 @@ func (s *Servidor) ProcesaMensaje(mensaje comun.Mensaje, conn net.Conn) {
 	     conn.Close()
 	     return
 	  }
-     	  s.salas[mensaje.Roomname] = NuevaSala(mensaje.Roomname)
+	  s.TextoPrivado(mensaje, conn, nombre)
+     
+     case "USERS":
+     	  s.ListaUsuarios(conn)
+	  
+     case "NEW_ROOM":
+     	  
+     	  if mensaje.Roomname == "" {
+	     s.MsjInvalido(mensaje, nombre)
+	     s.UsuarioDesconectado(mensaje, conn, nombre)
+	     for sala, _ := range s.salas {
+	     	  if s.salas[sala].ContieneCliente(nombre) {
+	      	     mensaje.Roomname = sala
+	      	     s.salas[sala].DejaSala(mensaje, nombre, conn)
+	      	  }
+	     }
+	     conn.Close()
+	     return
+	  }
+	  if utf8.RuneCountInString(mensaje.Roomname) > 16 {
+	     motivo := "Las salas deben tener a lo sumo 16 caracteres"
+	     mensaje.Text = motivo
+	     s.MsjInvalido(mensaje, nombre)
+	     return
+	  }
+     	  
 	  s.New_room(mensaje, nombre, conn)
+	  
 	  s.salas[mensaje.Roomname].AgregaCliente(s.clientes[nombre])
 	  
      case "INVITE":
-     	  nombre := s.GetNombre(conn)
+     	  
 	  if len(mensaje.Usernames) == 0 {
+	     s.MsjInvalido(mensaje, nombre)
 	     s.UsuarioDesconectado(mensaje, conn, nombre)
 	     for sala, _ := range s.salas {
 	     	  if s.salas[sala].ContieneCliente(nombre) {
@@ -73,26 +94,27 @@ func (s *Servidor) ProcesaMensaje(mensaje comun.Mensaje, conn net.Conn) {
 	     return
 	  }
 	  
-	  usuarios := mensaje.Usernames
-	  for i, cliente := range usuarios {
+	  usuarios := []string{}
+	  
+	  for _, cliente := range mensaje.Usernames {
 	      _, existe := s.clientes[cliente]
 	      if !existe {
 	      	 s.ClienteInexistente(mensaje, nombre, conn, cliente)
 		 return
 	      }
 	      
-	      if sala.ContieneCliente(cliente) || sala.invitados[cliente] {
-	      	 usuarios = append(usuarios[:i], usuarios[i+1:]...)
-	      }
-
-	      sala.invitados[cliente] = true
+	      if !sala.ContieneCliente(cliente) && !sala.invitados[cliente] {
+	      	 usuarios = append(usuarios, cliente)
+		 sala.invitados[cliente] = true
+	      } 	      
 	  }
 	  
 	  s.InvitaClientes(mensaje, nombre, usuarios)
 
      case "JOIN_ROOM":
-     	  nombre := s.GetNombre(conn)
+     	  
 	  if mensaje.Roomname == "" {
+	     s.MsjInvalido(mensaje, nombre)
 	     s.UsuarioDesconectado(mensaje, conn, nombre)
 	     for sala, _ := range s.salas {
 	     	  if s.salas[sala].ContieneCliente(nombre) {
@@ -122,7 +144,20 @@ func (s *Servidor) ProcesaMensaje(mensaje comun.Mensaje, conn net.Conn) {
 
 
      case "ROOM_USERS":
-     	  nombre := s.GetNombre(conn)
+     	  
+     	  if mensaje.Roomname == "" {
+	     s.MsjInvalido(mensaje, nombre)
+	     s.UsuarioDesconectado(mensaje, conn, nombre)
+	     for sala, _ := range s.salas {
+	     	  if s.salas[sala].ContieneCliente(nombre) {
+	      	     mensaje.Roomname = sala
+	      	     s.salas[sala].DejaSala(mensaje, nombre, conn)
+	      	  }
+	     }
+	     conn.Close()
+	     return
+	  }
+     	  
      	  sala, existe := s.salas[mensaje.Roomname]
 	  if !existe {
 	     s.NoExisteSala(mensaje, nombre, conn)
@@ -136,7 +171,19 @@ func (s *Servidor) ProcesaMensaje(mensaje comun.Mensaje, conn net.Conn) {
      	  sala.ListaSala(conn)
 
      case "ROOM_TEXT":
-     	  nombre := s.GetNombre(conn)
+     	  
+	  if mensaje.Text == "" {
+	     s.MsjInvalido(mensaje, nombre)
+	     s.UsuarioDesconectado(mensaje, conn, nombre)
+	     for sala, _ := range s.salas {
+	     	  if s.salas[sala].ContieneCliente(nombre) {
+	      	     mensaje.Roomname = sala
+	      	     s.salas[sala].DejaSala(mensaje, nombre, conn)
+	      	  }
+	     }
+	     conn.Close()
+	     return
+	  }
 	  sala, existe := s.salas[mensaje.Roomname]
 	  if !existe {
 	     s.NoExisteSala(mensaje, nombre, conn)
@@ -149,7 +196,19 @@ func (s *Servidor) ProcesaMensaje(mensaje comun.Mensaje, conn net.Conn) {
 	  sala.EnviaMensajeSala(mensaje, nombre, conn)
 
      case "LEAVE_ROOM":
-     	  nombre := s.GetNombre(conn)
+     	  
+	  if mensaje.Roomname == "" {
+	     s.MsjInvalido(mensaje, nombre)
+	     s.UsuarioDesconectado(mensaje, conn, nombre)
+	     for sala, _ := range s.salas {
+	     	  if s.salas[sala].ContieneCliente(nombre) {
+	      	     mensaje.Roomname = sala
+	      	     s.salas[sala].DejaSala(mensaje, nombre, conn)
+	      	  }
+	     }
+	     conn.Close()
+	     return
+	  }
 	  sala, existe := s.salas[mensaje.Roomname]
 	  if !existe {
 	     s.NoExisteSala(mensaje, nombre, conn)
@@ -160,9 +219,13 @@ func (s *Servidor) ProcesaMensaje(mensaje comun.Mensaje, conn net.Conn) {
 	     return
 	  }
 	  sala.DejaSala(mensaje, nombre, conn)
+	  
+	  if sala.EsVacia() {
+	     delete(s.salas, mensaje.Roomname)
+	  }
 
      case "DISCONNECT":
-     	  nombre := s.GetNombre(conn)
+     	  
 	  s.UsuarioDesconectado(mensaje, conn, nombre)
 	  for sala, _ := range s.salas {
 	      if s.salas[sala].ContieneCliente(nombre) {
@@ -173,7 +236,7 @@ func (s *Servidor) ProcesaMensaje(mensaje comun.Mensaje, conn net.Conn) {
 	  conn.Close()
 
      default:
-	  nombre := s.GetNombre(conn)
+	  
 	  s.MsjInvalido(mensaje, nombre)
 	  s.UsuarioDesconectado(mensaje, conn, nombre)
 	  for sala, _ := range s.salas {

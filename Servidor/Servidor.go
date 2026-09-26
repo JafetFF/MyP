@@ -9,6 +9,7 @@ import (
        "strings"
        "io"
        "errors"
+       "unicode/utf8"
 )
 
 type Servidor struct {
@@ -122,6 +123,24 @@ func (s *Servidor) AtiendeConexion(conn net.Conn) {
 	 }
 
      fmt.Printf("<<< %s\n", msj)
+     
+     if utf8.RuneCountInString(m.Username) > 8 {
+     	respuesta := comun.Mensaje{
+		  Type:      "RESPONSE",
+		  Operation: "INVALID",
+		  Result:    "NOT_IDENTIFIED",
+	}
+	codificado := json.NewEncoder(conn)
+	codificado.Encode(respuesta)
+	data, err := json.Marshal(respuesta)
+	if err != nil {
+	   fmt.Printf("Error al recibir mensaje: %v\n", err)
+	}
+	 
+	fmt.Printf(">>> %s\n", data)
+	conn.Close()
+	return
+     }
 
      if _, existe :=
      s.clientes[m.Username]; existe{
@@ -195,7 +214,7 @@ func (s *Servidor) AtiendeConexion(conn net.Conn) {
 	 }
 	 fmt.Printf("<<< %s\n", data)
 	 	 
-	 s.ProcesaMensaje(mensaje, conn)
+	 s.ProcesaMensaje(mensaje, conn, m.Username)
 
      } 
 }

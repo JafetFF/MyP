@@ -74,33 +74,36 @@ func InterpretaMensaje(entrada string, codificado *json.Encoder) {
 	  codificado.Encode(mensaje)
 
      case "ROOM_USERS":
-     	  if len(palabra) == 1 {
-	     return
+     	  mensaje := comun.Mensaje{
+		Type:     "ROOM_USERS",
+		Roomname: "",
 	  }
-	  codificado.Encode(comun.Mensaje{
-		Type:	  "ROOM_USERS",
-		Roomname: palabra[1],
-	  })
+     	  if len(palabra) != 1 {
+	     mensaje.Roomname = palabra[1]
+	  }
+	  codificado.Encode(mensaje)
 
      case "ROOM_TEXT":
-     	  if len(palabra) < 3 {
-	     return
+     	  mensaje := comun.Mensaje{
+		Type:      "ROOM_TEXT",
+		Roomname:  "",
+		Text:      "",
 	  }
-	  msj := strings.Join(palabra[2:], " ")
-	  codificado.Encode(comun.Mensaje{
-		Type:	  "ROOM_TEXT",
-		Roomname: palabra[1],
-		Text:	  msj,
-	  })
+     	  if len(palabra) > 2 {
+	     mensaje.Roomname  = palabra[1]
+	     mensaje.Text      = strings.Join(palabra[2:], " ")
+	  }
+	  codificado.Encode(mensaje)
 
      case "LEAVE_ROOM":
-     	  if len(palabra) < 2 {
-	     return
+     	  mensaje := comun.Mensaje{
+		Type:      "LEAVE_ROOM",
+		Roomname:  "",
 	  }
-	  codificado.Encode(comun.Mensaje{
-		Type:	  "LEAVE_ROOM",
-		Roomname: palabra[1],
-	  })
+     	  if len(palabra) != 1 {
+	     mensaje.Roomname  = palabra[1]
+	  }
+	  codificado.Encode(mensaje)
      
      default: // msj para todos
 	codificado.Encode(comun.Mensaje{

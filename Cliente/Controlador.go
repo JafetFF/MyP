@@ -93,11 +93,6 @@ func InterpretaMensaje(entrada string, codificado *json.Encoder) {
 		Type:	  "LEAVE_ROOM",
 		Roomname: palabra[1],
 	  })
-
-     case "DISCONNECT": 
-     	  codificado.Encode(comun.Mensaje{
-		Type:	  "DISCONNECT",
-	  })
      
      default: // msj para todos
 	codificado.Encode(comun.Mensaje{

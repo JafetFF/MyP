@@ -313,3 +313,26 @@ func (s *Servidor) JoinedRoom(m comun.Mensaje, nombre string, conn net.Conn, sal
 	 codificador.Encode(respuesta)
      }
 }
+
+// Función para cuando se reciba un mensaje inválido 
+func (s *Servidor) MsjInvalido(m comun.Mensaje, conn net.Conn) {
+     
+     for _, cliente := range sala.listaUsers {
+     	 if cliente.conexion == conn {
+	    continue
+	 }
+	 respuesta := comun.Mensaje{
+	      Type:      "RESPONSE",
+	      Operation: m.Roomname,
+	      Username: nombre,
+	 }
+	 data, err := json.Marshal(respuesta)
+	 if err != nil {
+	    fmt.Printf("Error al recibir mensaje: %v\n", err)
+	 }
+	 
+	 fmt.Printf(">>>prueba %s\n", data)
+	 codificador := json.NewEncoder(cliente.conexion)
+	 codificador.Encode(respuesta)
+     }
+}

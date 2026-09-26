@@ -127,10 +127,11 @@ func (s *Servidor) ProcesaMensaje(mensaje comun.Mensaje, conn net.Conn) {
 	      	 mensaje.Roomname = sala
 	      	 s.salas[sala].DejaSala(mensaje, nombre, conn)
 	      }
-	  }	  
+	  }
+	  conn.Close()
 
      default:
-     // cuando el mensaje sea inválido
+	  s.MsjInvalido(mensaje, conn)
      }
 }
 

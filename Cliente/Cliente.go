@@ -9,6 +9,8 @@ import (
        "bufio"
        "os"
        "strings"
+       "io"
+       "errors"
 )
 
 type Cliente struct {
@@ -68,7 +70,7 @@ func (c *Cliente) Conecta() {
 	   return
 	}
 	entrada = strings.TrimSpace(entrada)
-	if entrada == "exit" {
+	if entrada == "DISCONNECT" {
 	   codificado.Encode(comun.Mensaje{
 		Type: "DISCONNECT",
  	   })
@@ -81,14 +83,15 @@ func (c *Cliente) Conecta() {
 }
 
 // Función que se mantiene a la espera de un mensaje nuevo
-func EscuchaServidor(conn net.Conn, decodificado *json.Decoder) {
-
-     
+func EscuchaServidor(conn net.Conn, decodificado *json.Decoder) {   
      for {
 	 var m comun.Mensaje
      	 err := decodificado.Decode(&m)
 	 if err != nil {
-	    fmt.Printf("Error al recibir el mensaje")
+	    if errors.Is(err, net.ErrClosed) || err == io.EOF {
+	       return
+	    }
+	    fmt.Printf("Error al recibir el mensaje %v\n", err)
 	    return
 	 }
 

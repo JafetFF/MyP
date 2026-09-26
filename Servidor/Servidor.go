@@ -8,6 +8,7 @@ import (
        "MyP/Comun"
        "strings"
        "io"
+       "errors"
 )
 
 type Servidor struct {
@@ -172,26 +173,24 @@ func (s *Servidor) AtiendeConexion(conn net.Conn) {
 
      s.NuevoUsuario(conn)
 
-     for {
-     	 
+     for {    	 
      	 var mensaje comun.Mensaje
 
 	 err := decodificado.Decode(&mensaje)
 	 if err != nil {
-	    if err == io.EOF {
+	    if err == io.EOF || errors.Is(err, net.ErrClosed) {
 	       return
 	    }
-	    fmt.Printf("Error al recibir mensaje: %v\n", err)
+	    fmt.Printf("Error al recibir mensaje: %T\n", err)
 	    return
 	 }
+	 
 	 data, err := json.Marshal(mensaje)
 	 if err != nil {
 	    fmt.Printf("Error al recibir mensaje: %v\n", err)
 	 }
-	 
 	 fmt.Printf("<<< %s\n", data)
-	 
-	 
+	 	 
 	 s.ProcesaMensaje(mensaje, conn)
 
      } 

@@ -11,4 +11,4 @@ type Mensaje struct {
      Roomname   string		  `json:"roomname,omitempty"`
      Users      map[string]string `json:"users,omitempty"`
      Usernames  []string 	  `json:"usernames,omitempty"`
-}
+} 

@@ -18,52 +18,60 @@ func InterpretaMensaje(entrada string, codificado *json.Encoder) {
      	  codificado.Encode(comun.Mensaje{
 		Type: "USERS",
 	  })
+	  
      case "STATUS": // estado
-     	  if len(palabra) != 2 {
-	     return
-	  }
-     	  codificado.Encode(comun.Mensaje{
+     	  mensaje := comun.Mensaje{
 		Type:   "STATUS",
-		Status: palabra[1],
-	  })
-     case "TEXT": // msj privado
-     	  if len(palabra) < 3 { // desconectaremos depués al usuario
-	     
-	     return
-	  } 
-     	  codificado.Encode(comun.Mensaje{
-		Type:     "TEXT",
-		Username: palabra[1],
-		Text:     strings.Join(palabra[2:], " "),
-	  }) 
-     case "NEW_ROOM":
-     	  if len(palabra) == 1 { // lo desconectamos y enviamos el porque
-	     return
+		Status: "",
 	  }
-	  codificado.Encode(comun.Mensaje{
+     	  if len(palabra) != 1 {
+	     mensaje.Status = palabra[1]
+	  }
+	  codificado.Encode(mensaje)
+	  
+     case "TEXT": // msj privado
+     	  mensaje := comun.Mensaje{
+		Type:     "TEXT",
+		Username: "",
+		Text:     "",
+	  }
+     	  if len(palabra) > 2 {
+	     mensaje.Username = palabra[1]
+	     mensaje.Text     = strings.Join(palabra[2:], " ")
+	  }
+	  codificado.Encode(mensaje)
+	  
+     case "NEW_ROOM":
+     	  mensaje := comun.Mensaje{
 		Type:     "NEW_ROOM",
-		Roomname: palabra[1],
-	  })
+		Roomname: "",
+	  }
+     	  if len(palabra) != 1 {
+	     mensaje.Roomname = palabra[1]
+	  }
+	  codificado.Encode(mensaje)
      	  
      case "INVITE":
-     	  if len(palabra) < 3 {
-	     return // lo mismo de desconectarlo
+     	  mensaje := comun.Mensaje{
+		Type:      "INVITE",
+		Roomname:  "",
+		Usernames: []string{},
 	  }
-	  usuarios := palabra[2:]
-	  codificado.Encode(comun.Mensaje{
-		Type:	   "INVITE",
-		Roomname:  palabra[1],
-		Usernames: usuarios,
-	  })
+     	  if len(palabra) > 2 {
+	     mensaje.Roomname  = palabra[1]
+	     mensaje.Usernames = palabra[2:]
+	  }
+	  codificado.Encode(mensaje)
 
      case "JOIN_ROOM":
-     	  if len(palabra) == 1 {
-	     return
+     	  mensaje := comun.Mensaje{
+		Type:     "JOIN_ROOM",
+		Roomname: "",
 	  }
-	  codificado.Encode(comun.Mensaje{
-		Type:	  "JOIN_ROOM",
-		Roomname: palabra[1],
-	  })
+     	  if len(palabra) != 1 {
+	     mensaje.Roomname = palabra[1]
+	  }
+	  codificado.Encode(mensaje)
 
      case "ROOM_USERS":
      	  if len(palabra) == 1 {

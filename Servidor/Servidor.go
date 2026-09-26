@@ -76,6 +76,8 @@ func (s *Servidor) AtiendeConexion(conn net.Conn) {
 	}
 	 
 	fmt.Printf(">>> %s\n", data)
+
+	conn.Close()
 	return
      }
      if m.Type != "IDENTIFY" {
@@ -92,6 +94,7 @@ func (s *Servidor) AtiendeConexion(conn net.Conn) {
 	}
 	 
 	fmt.Printf(">>> %s\n", data)
+	conn.Close()
 	return
      }
      if strings.TrimSpace(m.Username) == "" {
@@ -108,7 +111,8 @@ func (s *Servidor) AtiendeConexion(conn net.Conn) {
 	}
 	 
 	fmt.Printf(">>> %s\n", data)
-	
+
+	conn.Close()
 	return
      }
 
@@ -181,7 +185,7 @@ func (s *Servidor) AtiendeConexion(conn net.Conn) {
 	    if err == io.EOF || errors.Is(err, net.ErrClosed) {
 	       return
 	    }
-	    fmt.Printf("Error al recibir mensaje: %T\n", err)
+	    fmt.Printf("Error al recibir mensaje: %v\n", err)
 	    return
 	 }
 	 

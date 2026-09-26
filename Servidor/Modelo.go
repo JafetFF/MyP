@@ -45,15 +45,17 @@ func (s *Servidor) TextoPrivado(m comun.Mensaje, conn net.Conn, nombre string) {
 }
 
 // Función para cambiar el estado de un usuario y avisar a los demás
-func (s *Servidor) CambiaEstado(m comun.Mensaje, conn net.Conn, nombre string) {
+func (s *Servidor) CambiaEstado(m comun.Mensaje, conn net.Conn, nombre string) bool {
      cliente, existe := s.clientes[nombre]
      if existe && cliente.estado == m.Status {
-     	return
+     	return true
      }
      if m.Status != "ACTIVE" && m.Status != "AWAY" &&
      	m.Status != "BUSY" {
-	return
+	s.MsjInvalido(m, nombre)
+	return false
      }
+     
      cliente.estado = m.Status
      for _, cliente := range s.clientes {
      	 if cliente.conexion == conn {
@@ -73,6 +75,7 @@ func (s *Servidor) CambiaEstado(m comun.Mensaje, conn net.Conn, nombre string) {
 	 codificador := json.NewEncoder(cliente.conexion)
 	 codificador.Encode(respuesta)
      }
+     return true
 }
 
 // Función que regresa la lista de usuarios de la sala principal
@@ -308,31 +311,27 @@ func (s *Servidor) JoinedRoom(m comun.Mensaje, nombre string, conn net.Conn, sal
 	    fmt.Printf("Error al recibir mensaje: %v\n", err)
 	 }
 	 
-	 fmt.Printf(">>>prueba %s\n", data)
+	 fmt.Printf(">>> %s\n", data)
 	 codificador := json.NewEncoder(cliente.conexion)
 	 codificador.Encode(respuesta)
      }
 }
 
 // Función para cuando se reciba un mensaje inválido 
-func (s *Servidor) MsjInvalido(m comun.Mensaje, conn net.Conn) {
+func (s *Servidor) MsjInvalido(m comun.Mensaje, nombre string) {
      
-     for _, cliente := range sala.listaUsers {
-     	 if cliente.conexion == conn {
-	    continue
-	 }
-	 respuesta := comun.Mensaje{
-	      Type:      "RESPONSE",
-	      Operation: m.Roomname,
-	      Username: nombre,
-	 }
-	 data, err := json.Marshal(respuesta)
-	 if err != nil {
-	    fmt.Printf("Error al recibir mensaje: %v\n", err)
-	 }
+      respuesta := comun.Mensaje{
+            Type:      "RESPONSE",
+      	    Operation: "INVALID",
+	    Result:    "INVALID",
+      }
+      data, err := json.Marshal(respuesta)
+      if err != nil {
+          fmt.Printf("Error al recibir mensaje: %v\n", err)
+      }
 	 
-	 fmt.Printf(">>>prueba %s\n", data)
-	 codificador := json.NewEncoder(cliente.conexion)
-	 codificador.Encode(respuesta)
-     }
+      fmt.Printf(">>> %s\n", data)
+      cliente, _ := s.clientes[nombre]
+      codificador := json.NewEncoder(cliente.conexion)
+      codificador.Encode(respuesta)
 }

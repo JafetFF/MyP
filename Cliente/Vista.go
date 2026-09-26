@@ -57,6 +57,7 @@ func Respuesta(mensaje comun.Mensaje) {
      	  if mensaje.Result == "NOT_IDENTIFIED" {
 	     fmt.Printf("RESPUESTA: Debes identificarte con un nombre\n")
 	  }
+	  fmt.Println("RESPUESTA: el JSON es inválido o no se recibieron los valores esperados")
      case "NEW_ROOM":
      	  fmt.Printf("\n	Se creó correctamente la sala %s\n> ", mensaje.Extra)
      case "ROOM_USERS":

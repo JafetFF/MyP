@@ -58,18 +58,26 @@ func (c *Cliente) Conecta() {
      	ProcesaMensaje(m)
      	return
      }
-     
-     go EscuchaServidor(conn, decodificado)
+     desconectado := make(chan struct{})
+     go EscuchaServidor(conn, decodificado, desconectado)
 
      lector := bufio.NewReader(os.Stdin)
-     for{
-	     
+     entradas := make(chan string)
+
+     go func() {
+	for {
+	    entrada, err := lector.ReadString('\n')
+	    if err != nil {
+	       return
+	    }
+	    entradas <- strings.TrimSpace(entrada)
+	    }
+     }()
+     for {     	 	   
 	fmt.Print("> ")
-	entrada, err := lector.ReadString('\n')
-	if err != nil {
-	   return
-	}
-	entrada = strings.TrimSpace(entrada)
+	select {
+	case entrada := <-entradas:
+
 	if entrada == "DISCONNECT" {
 	   codificado.Encode(comun.Mensaje{
 		Type: "DISCONNECT",
@@ -79,19 +87,25 @@ func (c *Cliente) Conecta() {
 	
 	InterpretaMensaje(entrada, codificado)
 
+	case <-desconectado:
+	     fmt.Println("\nEl servidor ha cerrado la conexión")
+	     return
+	}
      }
 }
 
 // Función que se mantiene a la espera de un mensaje nuevo
-func EscuchaServidor(conn net.Conn, decodificado *json.Decoder) {   
+func EscuchaServidor(conn net.Conn, decodificado *json.Decoder, desconectado chan struct{}) {   
      for {
 	 var m comun.Mensaje
      	 err := decodificado.Decode(&m)
 	 if err != nil {
 	    if errors.Is(err, net.ErrClosed) || err == io.EOF {
+	       close(desconectado)
 	       return
 	    }
 	    fmt.Printf("Error al recibir el mensaje %v\n", err)
+	    close(desconectado)
 	    return
 	 }
 

@@ -216,7 +216,7 @@ func (s *Servidor) AtiendeConexion(conn net.Conn) {
 	 	 
 	 s.ProcesaMensaje(mensaje, conn, m.Username)
 
-     } 
+     }
 }
 
 

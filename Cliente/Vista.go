@@ -77,7 +77,7 @@ func Respuesta(mensaje comun.Mensaje) {
 	     fmt.Printf("RESPUESTA: No puedes pedir la lista ni invitar a otros clientes a la sala \"%s\" porque no te has unido a ella\n> ", mensaje.Extra)
 	  }
      case "INVITE":
-       	  fmt.Printf("RESPUESTA: No puedes invitar a \"%s\" a unirse a una sala, pues \"%s\" no existe\n> ", mensaje.Extra, mensaje.Extra)
+       	  fmt.Printf("RESPUESTA: No puedes invitar a \"%s\" a unirse a una sala porque no existe\n> ", mensaje.Extra)
      case "JOIN_ROOM":
      	  if mensaje.Result == "SUCCESS" {
      	     fmt.Printf("Te has unido a la sala \"%s\"\n> ", mensaje.Extra)

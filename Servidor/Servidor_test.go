@@ -89,7 +89,7 @@ func TestAtiendeConexion_SUCCESS(t *testing.T) {
 
      _, err := cliente.Write([]byte(`{
 				       "type":"IDENTIFY",
-				       "username":"Nombre extravagante"
+				       "username":"Armando"
 				       }`))
      if err != nil {
      	t.Fatalf("No se pudo escribir en el cliente: %v", err)
@@ -106,7 +106,7 @@ func TestAtiendeConexion_SUCCESS(t *testing.T) {
      if d.Type != "RESPONSE" ||
         d.Operation != "IDENTIFY" ||
 	d.Result != "SUCCESS" ||
-	d.Extra != "Nombre extravagante" {
+	d.Extra != "Armando" {
 	t.Errorf("Respuesta incorrecta")
      }
 
@@ -123,12 +123,12 @@ func TestAtiendeConexion_USER_ALREADY_EXISTS(t *testing.T) {
      defer cliente.Close()
 
      servidorPrueba := &Servidor{
-     		    clientes: make(map[string]ClienteConectado),
+     		    clientes: make(map[string]*ClienteConectado),
 		    }
 
 
-     servidorPrueba.clientes["Nombre repetido"] = ClienteConectado{
-     	nombre:   "Nombre repetido",
+     servidorPrueba.clientes["Repetido"] = &ClienteConectado{
+     	nombre:   "Repetido",
 	estado:   "ACTIVE",
 	conexion: cliente,
      }
@@ -137,7 +137,7 @@ func TestAtiendeConexion_USER_ALREADY_EXISTS(t *testing.T) {
 
      _, err := cliente.Write([]byte(`{
 				       "type":"IDENTIFY",
-				       "username":"Nombre repetido"
+				       "username":"Repetido"
 				       }`))
      if err != nil {
      	t.Fatalf("No se pudo escribir en el cliente: %v", err)
@@ -154,7 +154,7 @@ func TestAtiendeConexion_USER_ALREADY_EXISTS(t *testing.T) {
      if d.Type != "RESPONSE" ||
         d.Operation != "IDENTIFY" ||
 	d.Result != "USER_ALREADY_EXISTS" ||
-	d.Extra != "Nombre repetido" {
+	d.Extra != "Repetido" {
 	t.Errorf("Respuesta incorrecta")
      }     
 }

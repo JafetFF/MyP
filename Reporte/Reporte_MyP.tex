@@ -1,0 +1,398 @@
+\documentclass[12pt,a4paper]{article}
+% \documentcla
+
+\usepackage{fontspec}
+
+\usepackage[spanish,mexico]{babel}
+\usepackage[a4paper,margin=2cm]{geometry}
+\usepackage{microtype}
+\usepackage{xcolor}
+
+\usepackage{tikz}
+\usepackage{array,tabularx,booktabs}
+\usepackage{enumitem}
+\usetikzlibrary{arrows.meta,positioning,shapes.geometric,fit}
+
+
+\usepackage{graphicx}
+
+\usepackage{listings}
+\usepackage[hidelinks]{hyperref}
+
+\setlength{\parindent}{0pt}
+
+% %
+\setlength{\parskip}{5pt}
+\setlist{nosep,leftmargin=*}
+
+\renewcommand{\arraystretch}{1.15}
+
+\definecolor{codebg}{RGB}{246,246,246}
+\definecolor{codeframe}{RGB}{210,210,210}
+\lstdefinestyle{gocode}{
+  language=Go,
+  basicstyle=\ttfamily\small,
+  backgroundcolor=\color{codebg},
+  frame=single,
+  rulecolor=\color{codeframe},
+  breaklines=true,
+  columns=fullflexible,
+  showstringspaces=false,
+  tabsize=4
+}
+\newcommand{\pendiente}[1]{\textbf{[Completar: #1]}}
+
+\tikzset{
+  bloque/.style={draw,rounded corners,align=center,minimum height=9mm,
+    text width=3.0cm,inner sep=5pt},
+  flecha/.style={-{Latex[length=2mm]},thick},
+  estado/.style={draw,rounded corners,align=center,minimum width=2.5cm,
+    minimum height=9mm,inner sep=4pt}
+}
+
+%%% 
+
+\setlength{\parindent}{20pt}
+
+\begin{document}
+
+\title{\LARGE\textbf{Reporte}}
+
+\author{Universidad Nacional Autónoma de México\\[0.6em]
+  Modelado y Programación\\[0.6em]
+  Facultad de Ciencias}
+\date{}
+\maketitle
+\begin{center}
+\rule{\linewidth}{0.4pt}\\[1.2em]
+\textbf{Jafet Felipe Flores}\\[1em]
+\rule{\linewidth}{0.4pt}\\[1.2em]
+\graphicspath{ {./Images/} }
+\includegraphics[scale=.8]{Portada.png}
+\end{center}
+
+
+\newpage
+
+\section*{Resumen}
+Este proyecto trata de implementar y diseñar un chat a través de una comunicación
+cliente-servidor, el cual será desarrollado en el lenguaje de programación Go,
+tanto el cliente como el servidor. La comunicación se basa en un intercambio de
+mensajes JSON. El servidor se encargará de procesar las conexiones, que cada
+cliente se identifique antes de poder hacer cualquier otra cosa, así también como
+responder a los JSON recibidos según sea cada caso. Por la parte del cliente,
+es quien manda los mensajes al servidor para ser debidamente procesados. Se hace
+uso de la concurrencia para poder atender múltiples conexiones.
+Este programa tiene la finalidad de permitir la conexión de varios clientes, de
+manera que se puedan comunicar entre ellos, todo esto siguiendo un protocolo
+específico. Los saltos de línea son los que se tienen pensados que sean los que
+delimiten el final de un mensaje. En la implementación de este proyecto se hizo
+uso de la comunicación TCP y de las goroutines para atender conexiones concurrentemente.
+
+\newpage
+\section*{Introducción}
+El principal problema que se busca resolver en este proyecto es poder tener un
+programa que permita la comunicación entre dos o más clientes por medio de un chat. Esto se hará mediante un sistema separado de la vista del cliente que tiene
+el objetivo de que el servidor se encargue de mantener los registros de clientes
+que se encuentran conectados, mientras que el cliente envía solicitudes y
+procesa cada mensaje recibido.
+
+\noindent El alcance es local por el momento ya que solamente es posible establecer una
+comunicación entre varios clientes dentro de una misma red Wi-Fi. En este caso,
+ese sería una de las limitaciones que presenta nuestro programa, aunque no se
+necesita hacer gran cosa para poder chatear entre distintos clientes.
+\\[0.5cm]
+\noindent Los objetivos principales se presentan a continuación:
+\begin{itemize}
+  \item Establecer una comunicación satisfacoria TCP entre varios clientes y el servidor
+  \item Con base en el protocolo definir los mensajes JSON con respuestas y procesos
+  \item Administrar clientes, sus estados y las salas que se crearán después
+  \item Manejar posibles errores como de identificación o clientes inexistentes
+  \item Organizar el código y asignar nombres coherentes a todo\\[0.1cm]
+\end{itemize}
+
+\noindent Además, se usará el MVC (Modelo-Vista-Controlador) para poder más fácilmente
+organizar el trabajo que cada parte debe hacer. Cabe mencionar que este proyecto
+se hará con el paradigma de Programación Orientado a Objetos (POO).
+
+\newpage
+\section*{Análisis y diseño}
+
+
+\subsection*{Funcionalidades básicas}
+
+\noindent Lo siguiente está dado por el protocolo.
+
+\begin{enumerate}
+  \item Identificar cada cliente con un nombre único máximo de 8 caracteres
+  \item Consultar que clientes están conectados y ver sus estados
+  \item Cambiar el estado de un cliente, con las opciones: \texttt{ACTIVE}, \texttt{AWAY} y \texttt{BUSY}
+  \item Enviar mensajes públicos y privados
+  \item Crear salas e invitar usuarios a unirse a salas, y pedir la lista de clientes
+  \item Enviar mensajes a los clientes de una sala y/o abandonarla
+  \item Notificar la desconexión, así también como la llegada de cada cliente
+\end{enumerate}
+
+\subsection*{Mensajes JSON}
+Aquí tenemos una comunicación TCP, donde los mensajes están (deben estarlo)
+codificados como un JSON válido que está delimitado por un salto de línea.
+De nuevo, si la longitud del nombre de un usuario es mayor a 8 se harán las
+operaciones indicadas por el protocolo, como es que si ocurre un error de
+la falta de un argumento esperado después de un indicador de comando se debe
+mandar un mensaje JSON y desconectar al cliente.
+
+\subsection*{Estructura general}
+La arquitectura se divide en el cliente y el servidor (adicionalmente
+un paquete que se comparte entre ellos). En el cliente se interpretan los
+mensajes recibidos por parte del usuario y se envían mensajes. El servidor es
+la parte que se encarga de procesar múltiples conexiones, y una vez que se
+valida la identificación del cliente procede a recibir los mensajes del cliente,
+actualizar estados, mandar mensajes acorde a la petición del cliente, etc.\\
+El paquete compartido define la estructura de los mensajes.
+
+\begin{center}
+\begin{tikzpicture}[node distance=13mm and 15mm]
+\node[bloque] (cliente) {\textbf{Cliente}\\Entrada y salida};
+\node[bloque,right=of cliente] (tcp) {Conexión TCP\\con JSON};
+\node[bloque,right=of tcp] (servidor) {\textbf{Servidor}\\Validación y despacho};
+\node[bloque,below=of servidor] (estado) {Estado del servidor\\Usuarios y salas};
+\node[bloque,below=of tcp] (comun) {\texttt{\textbf{Paquete compartido}\\Estructura del Mensaje}};
+\draw[flecha] (cliente) -- (tcp);
+\draw[flecha] (tcp) -- (servidor);
+\draw[flecha] (servidor) -- (estado);
+\draw[flecha] (comun) -- (tcp);
+\end{tikzpicture}
+\end{center}
+
+\newpage
+
+\subsection*{Estructura del mensaje}
+La estructura del \texttt{Mensaje} representa los campos del protocolo, como el
+tipo de operación (\texttt{Operation}), el nombre de usuario (\texttt{Username}), el resultado (\texttt{Result}) y los datos adicionales (\texttt{Extra}).
+El servidor básicamente maneja un map de \texttt{ClienteConectado} y otro de salas.
+Cada uno de los clientes tiene su nombre, estado y conexión. Y cada sala mantiene su
+nombre y los clientes que pertenecen a esa sala.
+
+\begin{center}
+\begin{tikzpicture}[node distance=10mm and 12mm]
+\node[bloque] (server) {\textbf{Servidor}\\ - Puerto\\ - Clientes\\ - Salas};
+\node[bloque,below left=of server] (cliente) {\textbf{ClienteC...}\\ - Nombre\\ - Estado\\ - Conexión};
+\node[bloque,below right=of server] (sala) {\textbf{Sala}\\ - Nombre\\ - ClienteC...};
+\draw[flecha] (server) -- node[left,align=center]{} (cliente);
+\draw[flecha] (server) -- node[right,align=center]{} (sala);
+\end{tikzpicture}
+\end{center}
+
+\subsection*{Proceso de identificación}
+Cuando se establece una conexión, el cliente en automático envía una solicitud
+de identificación. Luego de esto, el servidor comprueba si el JSON recibido es
+válido y que lo primero que se haga sea identificarse con el tipo \texttt{IDENTIFY},
+que el nombre no sea una cadena vacía, y también se cubre el caso cuando
+el nombre con el que se intenta identificar se encuentra en uso por otro cliente.
+En el caso de que todo salga bien, se registra al cliente y se responde con un mensaje
+de éxito. De lo contrario, se envía el error correspondiente y se cierra la conexión
+con el servidor.
+
+
+\begin{center}
+\begin{tikzpicture}[node distance=15mm]
+\node[estado] (step1) {Aceptar conexión};
+\node[estado,below=of step1] (identify) {Recibir el IDENTIFY};
+\node[estado,below=of identify] (validar) {Validar mensaje y nombre\\JSON};
+\node[estado,below left=of validar,xshift=-8mm] (error) {Enviar error\\y cerrar};
+\node[estado,below right=of validar,xshift=8mm] (bien) {Registrar cliente\\y enviar SUCCESS};
+\draw[flecha] (step1) -- (identify);
+\draw[flecha] (identify) -- (validar);
+\draw[flecha] (validar) -- node[above left]{inválido} (error);
+\draw[flecha] (validar) -- node[above right]{válido} (bien);
+\end{tikzpicture}
+\end{center}
+
+\subsection*{Comunicación cliente-servidor}
+Se muestra en el siguiente esquema el intercambio de mensajes entre el servidor
+y el cliente en el proceso de identificación, donde se sigue el algoritmo
+de solicitar algo y obtener una respuesta dependiendo del mensaje.
+
+\begin{center}
+\begin{tikzpicture}[x=1.2cm,y=1.5cm]
+\draw[dashed] (0,0) -- (0,-5.7);
+\draw[dashed] (5,0) -- (5,-5.7);
+\node[align=center] at (0,0.35) {\textbf{Cliente}};
+\node[align=center] at (5,0.35) {\textbf{Servidor}};
+\draw[flecha] (0,-1) -- node[above]{Conexión TCP} (5,-1);
+\draw[flecha] (0,-2) -- node[above]{IDENTIFY} (5,-2);
+\draw[flecha] (5,-3) -- node[above]{RESPONSE / SUCCESS} (0,-3);
+\draw[flecha] (5,-4) -- node[above,align=center]{NEW\_USER\\(aviso)} (0,-4);
+\node[align=center,text width=5cm] at (2.5,-5.1) {El cliente sigue enviando\\comandos y recibiendo mensajes};
+\end{tikzpicture}
+\end{center}
+
+\subsection*{Tarjetas CRC (Clase-Responsabilidad-Colaborador)}
+
+\noindent He aquí están las tarjetas CRC que nos permiten visualizar las
+responsabilidades de cada una de las clases, así como las clases con las
+que están relacionadas (colaborando).\\
+
+\noindent \begin{tabularx}{\textwidth}{|>{\raggedright\arraybackslash}p{0.23\textwidth}|X|X|}
+\hline
+\textbf{Clase} & \textbf{Responsabilidades} & \textbf{Colaboradores}\\
+\hline
+Servidor & Aceptar conexiones. Validar mensajes. Administrar usuarios y también salas. Mandar mensajes & ClienteConectado, Sala, Mensaje\\
+\hline
+ClienteConectado & Mantener el nombre, estado y conexión del cliente & Servidor\\
+\hline
+Sala & Mantener a los integrantes, saber quiénes han sido invitados & Servidor y ClienteConectado\\
+\hline
+Cliente & Conectarse al servidor. Enviar comandos, recibir y mostrar mensajes & Servidor y Mensaje\\
+\hline
+Mensaje & Representar las solicitudes, respuestas y notificaciones dadas en el protocolo & Cliente y Servidor\\
+\hline
+\end{tabularx}
+
+\newpage
+\subsection*{Estados del cliente}
+Como estado por default de un cliente (que ya se ha identificado) es \texttt{ACTIVE}.
+Y puede cambiar a \texttt{AWAY} o \texttt{BUSY} por medio de una solicitud válida,
+pues si se intenta solicitar por ejemplo un estado \texttt{BORED} que no está entre
+las opciones de un estado se desconectará al cliente luego de dar el aviso de mensaje
+inválido. Si se efectúa el cambio de estado, se debe de notificar a los demás clientes.
+
+\begin{center}
+\begin{tikzpicture}[node distance=30mm and 35mm]
+\node[estado] (active) {ACTIVE};
+\node[estado,right=of active] (away) {AWAY};
+\node[estado,below=of away] (busy) {BUSY};
+\draw[flecha,<->] (active) -- node[above]{STATUS} (away);
+\draw[flecha,<->] (away) -- node[right]{STATUS} (busy);
+\draw[flecha,<->] (busy) -- node[below left]{STATUS} (active);
+\end{tikzpicture}
+\end{center}
+
+\newpage
+\section*{Implementación}
+
+\subsection*{Tecnologías usadas y organización}
+El programa lo he desarrollado en el lenguaje de programación Go, donde he hecho
+uso del paquete \texttt{net} para las conexiones TCP, del paquete \texttt{encoding/json}
+para codificar y decodificar los mensajes, de las goroutines para poder atender
+conexiones concurrentemente. En este proyecto se separa el código del servidor, del
+cliente y de lo que se comparte entre ellos para tener una mejor visibilidad de lo
+que está pasando en el programa. Lo siguiente es un esquema donde se puede apreciar
+la atención de conexiones dentro del programa del servidor.
+
+\begin{lstlisting}[style=gocode,caption={Esquema simplificado de atención de conexiones}]
+listener, err := net.Listen("tcp", direccion)
+if err != nil {
+    return err
+}
+defer listener.Close()
+
+for {
+    conn, err := listener.Accept()
+    if err != nil {
+        continue
+    }
+    go servidor.AtiendeConexion(conn)
+}
+\end{lstlisting}
+
+\subsection*{Manejo de mensajes}
+Cuando se representa cada mensaje, se hace mediante una estructura compartida
+transmitiéndose como JSON con al menos un campo. El campo \texttt{type} nos dice
+la clase de mensaje recibido, el campo \texttt{Operation} nos dice la acción
+que se intentó realizar, el campo \texttt{Username} nos dice el nombre de usuario, y así con los demás campos establecidos por el protocolo.
+Lo que hacemos cuando uno o varios campos no son necesarios que aparezcan, es
+desde el paquete compartido de Mensaje, etiquetarlos con \textbf{omitempty} y así
+se omite cuando el campo es vacío.
+
+\subsection*{Operaciones principales}
+\noindent\begin{tabularx}{\textwidth}{|>{\ttfamily}p{0.30\textwidth}|X|}
+\hline
+\textnormal{\textbf{Operación}} & \textbf{Descripción}\\
+\hline
+IDENTIFY & Identifica a un cliente (automático al conectarse)\\
+STATUS & Modifica el estado del cliente\\
+USERS & Solicita la lista de clientes conectados\\
+TEXT / PUBLIC\_TEXT & Envía mensajes privados / públicos\\
+NEW\_ROOM & Crea una sala para chatear\\
+INVITE / JOIN\_ROOM & Invita clientes a una sala / permite su ingreso a ella\\
+ROOM\_USERS / ROOM\_TEXT & Consulta integrantes / envía mensajes a una sala\\
+LEAVE\_ROOM / DISCONNECT & Deja una sala / Desconecta al cliente\\
+\hline
+\end{tabularx}
+
+\begin{table}[ht]
+    \centering
+    \caption{Comandos y argumentos de los mensajes del protocolo}
+    \label{tab:argumentos}
+    \begin{tabular}{|l|p{6cm}|p{6cm}|}
+        \hline
+        \textbf{Operación} & \textbf{Uso} & \textbf{Ejemplo} \\
+        \hline
+        IDENTIFY & Automático al conectarse & \texttt{\{"type":"IDENTIFY","username":"Juan"\}} \\
+        \hline
+        STATUS & STATUS <estado> & STATUS BUSY \\
+        \hline
+        USERS & USERS & USERS \\
+        \hline
+        PUBLIC\_TEXT & <texto> & Hola a todos \\
+        \hline
+        TEXT & TEXT <username> <mensaje> & TEXT Kay Hola, ¿cómo estás? \\
+        \hline
+        NEW\_ROOM & NEW\_ROOM <roomname> & NEW\_ROOM Tareas \\
+        \hline
+        INVITE & INVITE <roomname> <usernames> & INVITE Tareas Kay \\
+        \hline
+        JOIN\_ROOM & JOIN\_ROOM <roomname> & JOIN\_ROOM Tareas \\
+        \hline
+        ROOM\_USERS & ROOM\_USERS <roomname> & ROOM\_USERS Tareas \\
+        \hline
+        ROOM\_TEXT & ROOM\_TEXT <roomname> <mensaje> & ROOM\_TEXT Tareas Me pasas la tarea? \\
+        \hline
+        LEAVE\_ROOM & LEAVE\_ROOM <roomname> & LEAVE\_ROOM Tareas \\
+        \hline
+        DISCONNECT & DISCONNECT & DISCONNECT \\
+        \hline
+    \end{tabular}
+\end{table}
+
+\subsection*{Validación y manejo de posibles errores}
+El servidor rechaza mensajes JSON inválidos (mal construidos), solicitudes
+distintas de la identificación como primer paso, nombres vacíos o repetidos
+y operaciones con parámetros incorrectos. También se comprueba la existencia
+de los clientes a los que se les efectúa una determinada acción, como invitar
+a una sala, así como la comprobación de la pertenencia del cliente a la sala
+a la que quiere invitar a otro cliente. Así con los casos que lo requieran.
+
+\subsection*{Requerimientos para el programa}
+Solamente ejecutar los dos archivos \texttt{Servidor} y \texttt{Cliente}, pero
+comenzando con el del servidor. Se debe hacer \texttt{./Servidor} y luego con
+el del cliente \texttt{./Cliente IP:HOST <nombre>}, suponiendo que están
+conectados a la misma red Wi-Fi. Solamente recordando que el nombre debe ser a
+lo más de 8 caracteres de longitud, y dentro del programa, al crear una sala
+su nombre debe ser máximo de 16 caracteres.
+
+
+\newpage
+\section*{Conclusiones}
+Después del desarrollo de este proyecto, aprendí con más claridad cómo es
+que funciona la comunicación TCP, en este caso del cliente-servidor. Además,
+pude aprender (no en su totalidad) como programar en Go, y una técnica usando
+net.Pipe() en go, que es básicamente simular una conexión entre dos extremos en
+memoria, esto me ayudó a realizar pequeñas pruebas sin necesidad de establecer
+una conexión real. Lo que se me dificultó fue entender como era esa
+comunicación que al final de cuentas era lo principal en este proyecto.\\
+
+\noindent Veo un área de mejora en mis comentarios dentro del proyecto, y también en
+como nombro tanto las variables como las funciones, además de organizar mis
+ideas. Si en algún futuro pudiera hacer de este proyecto algo mejor, lo que
+haría sería darle más alcance y ponerle al menos una interfaz bonita.
+Lo que me ayudó a visualizar el funcionamiento de este proyecto fue usar el
+paradigma de POO y el MVC, así también como los distintos diagramas y tarjetas
+CRC. Otra cosa que se me dificultó fue cubrir todos los posibles casos dados
+implícita y explícitamente en el protocolo, pues al cubrir unos salían otros
+nuevos que no había contemplado.
+
+
+
+\end{document}

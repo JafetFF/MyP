@@ -60,6 +60,8 @@ func (s *Servidor) AtiendeConexion(conn net.Conn) {
      
      fmt.Printf("Nueva Conexión desde %s\n", conn.RemoteAddr().String())
 
+     const max_mensaje = 1024 * 1024
+
      decodificado := json.NewDecoder(conn)
      var m comun.Mensaje
      err := decodificado.Decode(&m)
